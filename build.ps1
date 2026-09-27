@@ -1,16 +1,20 @@
-﻿# 一键编译 curriculum-exporter.exe
+﻿# 一键编译发行版 exe
 #   用法: powershell -ExecutionPolicy Bypass -File build.ps1
 #
-# 为什么优先用 Roslyn 编译器(VS Build Tools 自带):
-#   它支持 /deterministic,能产出【可复现】的二进制 ——
-#   同一份源码反复编译得到同一个 SHA256,哈希才能用来证明"构建未被篡改"。
-#   若机器上只有系统自带的旧 csc,仍能编译,但它会把编译时间写进 PE 头,
-#   每次哈希都不同,这时哈希不能用于比对。
+# 产物命名遵循 <项目>-<版本>-<平台>-<运行时>.exe
+#   win    = Windows 平台
+#   net48  = 依赖 .NET Framework 4.8(Win10/11 系统自带,无需安装)
+#   架构为 AnyCPU,32/64 位 Windows 都能运行,故不标 x64/x86
+#
+# 优先使用 Roslyn 编译器:它支持 /deterministic,同一份源码反复编译
+# 得到同一个 SHA256(旧 csc 会把编译时间写进 PE 头,每次哈希都变)。
 $ErrorActionPreference = 'Stop'
 
-$root   = Split-Path -Parent $MyInvocation.MyCommand.Path
-$srcDir = Join-Path $root 'src'
-$out    = Join-Path $root 'curriculum-exporter.exe'   # 固定输出路径,是可复现的前提
+$version = '1.0.0'
+$root    = Split-Path -Parent $MyInvocation.MyCommand.Path
+$srcDir  = Join-Path $root 'src'
+$outName = "curriculum-exporter-v$version-win-net48.exe"
+$out     = Join-Path $root $outName            # 固定输出路径,是可复现的前提
 
 function Find-Csc {
     $cands = New-Object System.Collections.ArrayList
@@ -29,9 +33,10 @@ function Find-Csc {
 $csc = Find-Csc
 $isRoslyn = $csc -like '*Roslyn*'
 
+Write-Host ("版本   : v" + $version)
 Write-Host ("编译器 : " + $csc)
 if ($isRoslyn) { Write-Host "可复现 : 是 (/deterministic)" } else { Write-Host "可复现 : 否 (旧 csc,哈希每次会变)" }
-Write-Host ("输出   : " + $out)
+Write-Host ("输出   : " + $outName)
 Write-Host ""
 
 $a = New-Object System.Collections.ArrayList

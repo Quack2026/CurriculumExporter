@@ -35,7 +35,7 @@ jobs:
       - name: Build (deterministic)
         shell: pwsh
         run: |
-          $out = Join-Path $env:GITHUB_WORKSPACE 'curriculum-exporter.exe'
+          $out = Join-Path $env:GITHUB_WORKSPACE 'curriculum-exporter-v1.0.0-win-net48.exe'
           & $env:CSC /nologo /target:winexe /deterministic /codepage:65001 /optimize+ `
             /win32manifest:src\app.manifest /win32icon:src\app.ico `
             "/out:$out" `
@@ -47,13 +47,13 @@ jobs:
       - name: Show SHA256
         shell: pwsh
         run: |
-          $hash = (Get-FileHash .\curriculum-exporter.exe -Algorithm SHA256).Hash
+          $hash = (Get-FileHash .\curriculum-exporter-v1.0.0-win-net48.exe -Algorithm SHA256).Hash
           Write-Host "SHA256: $hash"
           @"
           ### 构建产物哈希
 
           ````
-          curriculum-exporter.exe
+          curriculum-exporter-v1.0.0-win-net48.exe
           SHA256: $hash
           ````
           "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
@@ -62,10 +62,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: curriculum-exporter
-          path: curriculum-exporter.exe
+          path: curriculum-exporter-v1.0.0-win-net48.exe
 
       - name: Attach to Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: curriculum-exporter.exe
+          files: curriculum-exporter-v1.0.0-win-net48.exe

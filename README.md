@@ -28,7 +28,7 @@
 
 ## 使用方法
 
-1. 下载 `curriculum-exporter.exe`(**或者自己编译**,见下文——推荐,这样你能确认它没干坏事)
+1. 下载 `curriculum-exporter-v1.0.0-win-net48.exe`(**或者自己编译**,见下文——推荐,这样你能确认它没干坏事)
 2. 双击运行,填入学号和密码,点「获取课表」
 3. 程序自动登录 → 抓取全学期课表 → 在**桌面**生成 `课表.ics`
 4. 把这个 `.ics` 传到手机,**点开它 → 选择「日历」打开 → 导入**
@@ -72,7 +72,7 @@ cd CurriculumExporter
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-产物:`curriculum-exporter.exe`(文件名可随意改,不影响内容)
+产物:`curriculum-exporter-v1.0.0-win-net48.exe`
 
 编译参数(见 `build.ps1`):
 
