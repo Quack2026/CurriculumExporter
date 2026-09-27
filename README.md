@@ -18,6 +18,14 @@
 
 ---
 
+## 界面预览
+
+<p align="center">
+  <img src="img/1.jpg" width="240" />
+  <img src="img/2.jpg" width="240" />
+  <img src="img/3.jpg" width="240" />
+</p>
+
 ## 使用方法
 
 1. 下载 `curriculum-exporter.exe`(**或者自己编译**,见下文——推荐,这样你能确认它没干坏事)
