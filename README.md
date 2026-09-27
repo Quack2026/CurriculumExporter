@@ -20,7 +20,7 @@
 
 ## 使用方法
 
-1. 下载 `课表导出.exe`(**或者自己编译**,见下文——推荐,这样你能确认它没干坏事)
+1. 下载 `curriculum-exporter.exe`(**或者自己编译**,见下文——推荐,这样你能确认它没干坏事)
 2. 双击运行,填入学号和密码,点「获取课表」
 3. 程序自动登录 → 抓取全学期课表 → 在**桌面**生成 `课表.ics`
 4. 把这个 `.ics` 传到手机,**点开它 → 选择「日历」打开 → 导入**
@@ -46,30 +46,46 @@
   任何人都能解开——也就是说,它**实质上等同于明文**。这是学校系统的设计问题,
   不是本工具引入的。任何能访问这个网页的人都能拿到这个密钥。
 - **代码完全开源**。你可以通读 `src/` 下的全部源码,也可以自己编译,
-  用产物覆盖 `课表导出.exe`,确认行为一致。
+  用产物替换 Release 里的 exe,确认行为一致。
 
 ---
 
-## 自己编译(推荐,用来核对 exe 与源码一致)
+## 自己编译(推荐)
 
-需要 Windows 自带的 .NET Framework 编译器(所有 Win10/11 都有):
+**最省心的方式:不用自己编译,直接下载 [Actions](../../actions) 里 GitHub 官方机器编译出的产物**——
+那是"GitHub 编译的",不需要信任任何人的本机环境。这是本项目最推荐的用法。
+
+如果你想在自己机器上编译(验证这份源码确实能构建出可用程序):
+
+需要 .NET Framework 4.x(所有 Win10/11 自带)或 Visual Studio Build Tools:
 
 ```powershell
 cd CurriculumExporter
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-产物在 `..\课表导出.exe`(即 `C:\Tools\课表导出.exe`)。
+产物:`curriculum-exporter.exe`(文件名可随意改,不影响内容)
 
 编译参数(见 `build.ps1`):
 
 ```
-csc /target:winexe /win32manifest:src\app.manifest /win32icon:src\app.ico
-    /codepage:65001 /optimize+
+csc /target:winexe /deterministic /codepage:65001 /optimize+
+    /win32manifest:src\app.manifest /win32icon:src\app.ico
     /r:System.dll /r:System.Core.dll /r:System.Drawing.dll
     /r:System.Windows.Forms.dll /r:System.Web.Extensions.dll
     src\Program.cs src\Network.cs src\IcsBuilder.cs
 ```
+
+### 关于哈希核对(先说清楚,免得被误导)
+
+- `build.ps1` 会**优先使用 Roslyn 编译器**(VS Build Tools 自带),它支持 `/deterministic`,
+  **同一份源码反复编译会得到完全相同的 SHA256**——这种哈希才有比对意义。
+- 若机器上只有系统自带的**旧 `csc`**,编译照样能用,但它会把**编译时间写进 PE 头**,
+  于是**每次哈希都不一样**。这是编译器的老毛病,**不代表程序被人动过手脚**。
+  (本项目正是在踩到这个坑之后才切到 Roslyn 的。)
+- **即使都用 Roslyn,不同机器之间哈希也可能不一致**(编译器小版本、源码所在路径都会
+  参与内容派生)。所以哈希只适合**在同一环境下验证"构建可复现"**,
+  不适合拿两台机器的结果互校。
 
 ---
 
@@ -142,7 +158,7 @@ CurriculumExporter/
 │   └── mkico.py          PNG → ICO 转换脚本(需要 Pillow)
 ├── assets/
 │   └── icon.png          图标源文件
-├── build.ps1             一键编译
+├── build.ps1             一键编译(优先 Roslyn,可复现)
 └── README.md
 ```
 

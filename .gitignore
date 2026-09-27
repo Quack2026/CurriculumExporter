@@ -1,5 +1,5 @@
 # 编译产物(通过 GitHub Release 发布,不入库)
-/课表导出.exe
+curriculum-exporter.exe
 *.exe
 *.pdb
 *.log
