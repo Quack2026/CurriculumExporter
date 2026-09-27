@@ -1,0 +1,52 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build exe (csc, .NET Framework 4.8 自带)
+        shell: pwsh
+        run: |
+          $csc = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
+          if (-not (Test-Path $csc)) { throw "csc.exe not found" }
+          & $csc /nologo /target:winexe `
+            "/win32manifest:$PWD\src\app.manifest" `
+            "/win32icon:$PWD\src\app.ico" `
+            /codepage:65001 /optimize+ `
+            "/out:$PWD\curriculum-exporter.exe" `
+            /r:System.dll /r:System.Core.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll /r:System.Web.Extensions.dll `
+            "$PWD\src\Program.cs" "$PWD\src\Network.cs" "$PWD\src\IcsBuilder.cs"
+          if ($LASTEXITCODE -ne 0) { throw "build failed" }
+
+      - name: Show SHA256
+        shell: pwsh
+        run: |
+          Get-FileHash .\curriculum-exporter.exe -Algorithm SHA256 | Tee-Object -Variable h | Format-List
+          "SHA256=$($h.Hash)" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: curriculum-exporter
+          path: curriculum-exporter.exe
+
+      - name: Attach to Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: curriculum-exporter.exe
