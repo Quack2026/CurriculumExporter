@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Android 8.0+ 才支持把导航栏图标改成深色。
+      必须带 parent：这里的同名 style 会整体替换 values/themes.xml 的定义，
+      没有 parent 就会连 NoActionBar 父主题一起丢掉，系统 ActionBar 就会盖住自绘顶栏。
+    -->
+    <style name="AppTheme" parent="AppThemeBase">
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+
+    <style name="AppThemePlain" parent="AppThemePlainBase">
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+</resources>

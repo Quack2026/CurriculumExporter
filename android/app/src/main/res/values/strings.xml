@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">广理课表导出</string>
+
+    <!-- 主界面 -->
+    <string name="label_user">学号</string>
+    <string name="hint_user">输入学号</string>
+    <string name="label_pass">密码</string>
+    <string name="hint_pass">输入密码</string>
+    <string name="label_option">选项</string>
+    <string name="opt_military">生成军训周事件</string>
+    <string name="opt_military_hint">第 14–15 周教务系统里是空课表，单独标出来，免得以为这两周没课</string>
+    <string name="btn_fetch">获取课表</string>
+    <string name="btn_cancel">取消获取</string>
+    <string name="btn_cancelling">正在取消…</string>
+    <string name="label_log">运行日志</string>
+    <string name="log_idle">等待开始…</string>
+    <string name="privacy_note">只连学校官网；默认不保存密码。开启高级设置后，密码会使用 Android Keystore 加密保存。</string>
+
+    <!-- 获取范围（长按「获取课表」） -->
+    <string name="range_title">选择获取范围</string>
+    <string name="range_hint_known">现在是第 %1$d 周。范围越窄越快（只抓本周往后的课，一周一个请求，不并发）。</string>
+    <string name="range_hint_unknown">还没获取过课表。先跑一次「全面重新获取」，本应用才知道现在第几周，之后就能按周快速获取。</string>
+    <string name="range_full_retry">全面重新获取</string>
+    <string name="range_full_retry_hint">第 1~20 周全部重抓，包含已经上过的课。最慢</string>
+    <string name="range_full_update">全面更新</string>
+    <string name="range_full_update_hint">从本周抓到第 20 周，已上过的不再抓。较快</string>
+    <string name="range_5">近 5 周</string>
+    <string name="range_5_hint">本周 + 之后 4 周。快</string>
+    <string name="range_3">近 3 周</string>
+    <string name="range_3_hint">本周 + 之后 2 周。最快</string>
+    <string name="range_need_full">先获取一次课表，本应用才知道现在第几周</string>
+
+    <!-- 结果界面 -->
+    <string name="result_title">课表预览</string>
+    <string name="btn_back">←</string>
+    <string name="mode_week">按周看</string>
+    <string name="mode_course">按课程看</string>
+    <string name="btn_write_calendar">写入系统日历</string>
+    <string name="btn_export">保存 .ics</string>
+    <string name="btn_share">分享 .ics</string>
+    <string name="partial_fetch_note">本次只获取了第 %1$d~%2$d 周。写入日历只会更新这几周，不会删除其他周的课。</string>
+
+    <!-- 日历 -->
+    <string name="perm_calendar_title">需要日历权限</string>
+    <string name="perm_calendar_message">把课表写进手机系统日历需要「读取/写入日历」权限。不授权也可以，改成导出 .ics 文件自己导入。</string>
+    <string name="perm_calendar_ok">去授权</string>
+    <string name="perm_calendar_no">只导出文件</string>
+    <string name="dlg_calendar_title">选择要写入的日历</string>
+    <string name="dlg_calendar_hint">已隐藏生日、纪念日、倒计时等系统特殊日历。可以选择已有日历，也可以点「创建广理课表」新建一个专用空日历。</string>
+    <string name="dlg_calendar_hint_all">现在显示手机里的全部日历（含生日、纪念日、节假日等系统日历）。建议选一个专用日历，或点「创建广理课表」新建一个。</string>
+    <string name="dlg_no_calendar">没有找到可用日历。可以让本应用创建一个空的「广理课表」日历，再把当前课表写进去。</string>
+    <string name="dlg_create_calendar">创建广理课表</string>
+    <string name="dlg_dup_title">检测到上次导入</string>
+    <string name="dlg_dup_message">上次往「%1$s」导入过 %2$d 个事件。\n\n先删掉它们再导入，可以避免课表重复。</string>
+    <string name="dlg_dup_delete">先删旧的</string>
+    <string name="dlg_cancel">取消</string>
+
+    <!-- 提示条 -->
+    <string name="banner_notice_title">提示</string>
+    <string name="banner_close">关闭提示</string>
+    <string name="banner_login_title">登录失败</string>
+    <string name="banner_fail_title">获取失败</string>
+
+    <!-- 崩溃记录 -->
+    <string name="crash_title">上次运行出错了</string>
+    <string name="crash_message">下面是错误信息，可以直接复制后发给我，用来定位问题。</string>
+    <string name="crash_copy">复制</string>
+    <string name="crash_copied">已复制到剪贴板</string>
+
+    <!-- 高级设置 -->
+    <string name="settings_entry">高级设置</string>
+    <string name="version_label">版本 %1$s</string>
+    <string name="settings_title">高级设置</string>
+    <string name="settings_calendar_section">课表日历</string>
+    <string name="settings_calendar_name_hint">例如：2026 秋季课表</string>
+    <string name="settings_calendar_name_note">默认自动创建并更新这个日历，不再询问选择目标。</string>
+    <string name="settings_use_picker">启用系统日历选择</string>
+    <string name="settings_use_picker_hint">打开后，写入时显示手机里的日历列表。</string>
+    <string name="settings_show_all">显示全部日历</string>
+    <string name="settings_show_all_hint">关闭时隐藏生日、纪念日、节假日等特殊日历。</string>
+    <string name="settings_confirm_section">写入确认</string>
+    <string name="settings_confirm_write">写入前再次确认</string>
+    <string name="settings_confirm_replace">更新旧课表前再次确认</string>
+    <string name="settings_account_section">账户</string>
+    <string name="settings_save_password">保存密码</string>
+    <string name="settings_save_password_hint">密码使用 Android Keystore 加密保存，不保存明文。</string>
+    <string name="settings_theme_section">外观</string>
+    <string name="settings_dynamic_theme">跟随系统主题色</string>
+    <string name="settings_save">保存设置</string>
+    <string name="settings_saved">设置已保存</string>
+    <string name="settings_calendar_name_required">请填写日历名称</string>
+    <string name="dlg_write_confirm_title">确认写入</string>
+    <string name="dlg_write_confirm_message">将把当前课表写入「%1$s」。</string>
+    <string name="dlg_write_confirm_ok">继续写入</string>
+    <string name="btn_cancel_sync">取消同步</string>
+</resources>

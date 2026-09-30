@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 可选日历的一行。按压反馈用系统 selectableItemBackground，黑白主题下就是一层浅灰。 -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="48dp"
+    android:paddingTop="@dimen/space_m"
+    android:paddingBottom="@dimen/space_m"
+    android:textColor="@color/mono_black"
+    android:textSize="@dimen/text_body" />

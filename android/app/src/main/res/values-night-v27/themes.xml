@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 暗色模式下导航栏保持浅色图标；结构说明同 values-v27/themes.xml。 -->
+    <style name="AppTheme" parent="AppThemeBase">
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
+    <style name="AppThemePlain" parent="AppThemePlainBase">
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>

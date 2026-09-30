@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ 跟随系统动态主题色；低版本继续使用黑白 accent。 -->
+    <color name="accent">@android:color/system_accent1_600</color>
+    <color name="on_accent">#FFFFFFFF</color>
+    <color name="ripple_on_accent">#33FFFFFF</color>
+</resources>

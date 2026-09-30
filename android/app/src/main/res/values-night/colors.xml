@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 仍然是黑白灰，只把明暗关系反过来适配系统暗色模式。 -->
+    <color name="app_background">#FF101010</color>
+    <color name="app_surface">#FF1C1C1C</color>
+    <color name="app_surface_deep">#FF2A2A2A</color>
+    <color name="app_line">#FF3A3A3A</color>
+    <color name="app_divider">#FF303030</color>
+
+    <color name="text_primary">#FFF5F5F5</color>
+    <color name="text_secondary">#FFBDBDBD</color>
+    <color name="text_hint">#FF888888</color>
+
+    <color name="accent">#FFF5F5F5</color>
+    <color name="on_accent">#FF101010</color>
+    <color name="plain_accent">#FFF5F5F5</color>
+    <color name="ripple">#33FFFFFF</color>
+    <color name="ripple_on_accent">#33000000</color>
+
+    <!-- 夜间主题也提供旧资源名，drawable/style 无需分叉。 -->
+    <color name="mono_black">@color/text_primary</color>
+    <color name="mono_white">@color/app_surface</color>
+    <color name="mono_gray_text">@color/text_secondary</color>
+    <color name="mono_gray_hint">@color/text_hint</color>
+    <color name="mono_surface">@color/app_surface</color>
+    <color name="mono_surface_deep">@color/app_surface_deep</color>
+    <color name="mono_line">@color/app_line</color>
+    <color name="mono_divider">@color/app_divider</color>
+    <color name="mono_ripple">@color/ripple</color>
+    <color name="mono_ripple_light">@color/ripple_on_accent</color>
+</resources>

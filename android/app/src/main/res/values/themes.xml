@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      黑白主题，颜色使用语义资源并由 values-night 自动适配系统暗色模式。
+
+      注意：Android 不会合并不同配置目录下同名 style 的定义，而是整体替换。
+      所以 AppTheme / AppThemePlain 只是「派生开关」，真正的项都放在 *Base 里；
+      values-v27 这类配置目录必须写成 parent="AppThemeBase" 的增量覆盖。
+      之前 v27 里重写了一个不带 parent 的 AppTheme，把 NoActionBar 父主题一起丢了，
+      系统 ActionBar 复活并盖住自绘顶栏，「高级设置」入口就是这样被挡掉的。
+    -->
+    <style name="AppThemeBase" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorPrimary">@color/accent</item>
+        <item name="android:colorPrimaryDark">@color/accent</item>
+        <item name="android:colorAccent">@color/accent</item>
+        <item name="android:colorControlActivated">@color/accent</item>
+        <item name="android:colorControlNormal">@color/text_secondary</item>
+        <item name="android:colorControlHighlight">@color/ripple</item>
+        <item name="android:colorButtonNormal">@color/app_surface</item>
+        <item name="android:colorBackground">@color/app_background</item>
+        <item name="android:windowBackground">@color/app_background</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/text_hint</item>
+        <item name="android:navigationBarColor">@color/app_background</item>
+        <item name="android:statusBarColor">@color/accent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="AppTheme" parent="AppThemeBase" />
+
+    <style name="AppThemePlainBase" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorPrimary">@color/plain_accent</item>
+        <item name="android:colorPrimaryDark">@color/plain_accent</item>
+        <item name="android:colorAccent">@color/plain_accent</item>
+        <item name="android:colorControlActivated">@color/plain_accent</item>
+        <item name="android:colorControlNormal">@color/text_secondary</item>
+        <item name="android:colorControlHighlight">@color/ripple</item>
+        <item name="android:colorBackground">@color/app_background</item>
+        <item name="android:windowBackground">@color/app_background</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/text_hint</item>
+        <item name="android:navigationBarColor">@color/app_background</item>
+        <item name="android:statusBarColor">@color/plain_accent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="AppThemePlain" parent="AppThemePlainBase" />
+</resources>

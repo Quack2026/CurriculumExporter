@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 自绘顶栏（系统 ActionBar 会压住内容，所以整条自己画） -->
+    <style name="TopBar">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/topbar_height</item>
+        <item name="android:background">@color/accent</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+
+    <style name="TopBarTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/on_accent</item>
+        <item name="android:textSize">@dimen/text_headline</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- 分组小标题 -->
+    <style name="SectionLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/mono_gray_text</item>
+        <item name="android:textSize">@dimen/text_label</item>
+    </style>
+
+    <!-- 通用单行输入框；inputType 由各布局自己指定 -->
+    <style name="InputField">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_input</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:importantForAutofill">no</item>
+        <item name="android:padding">@dimen/space_m</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">@color/mono_black</item>
+        <item name="android:textColorHint">@color/mono_gray_hint</item>
+        <item name="android:textSize">@dimen/text_body</item>
+    </style>
+
+    <style name="InputField.Password">
+        <item name="android:inputType">textPassword</item>
+    </style>
+
+    <style name="ButtonPrimary">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/button_height</item>
+        <item name="android:background">@drawable/bg_button_primary</item>
+        <item name="android:gravity">center</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:padding">0dp</item>
+        <item name="android:stateListAnimator">@animator/button_press</item>
+        <item name="android:textColor">@color/button_text_primary</item>
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="ButtonSecondary">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/button_height_s</item>
+        <item name="android:background">@drawable/bg_button_secondary</item>
+        <item name="android:gravity">center</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:padding">0dp</item>
+        <item name="android:stateListAnimator">@animator/button_press</item>
+        <item name="android:textColor">@color/mono_black</item>
+        <item name="android:textSize">@dimen/text_small</item>
+    </style>
+
+    <!-- 分段控件里的可点标签 -->
+    <style name="SegmentText">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">@dimen/text_small</item>
+    </style>
+
+    <style name="LogText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:lineSpacingExtra">4dp</item>
+        <item name="android:textColor">@color/mono_gray_text</item>
+        <item name="android:textIsSelectable">true</item>
+        <item name="android:textSize">@dimen/text_mono</item>
+    </style>
+
+    <!-- 设置行：左标题 + 右开关 -->
+    <style name="SettingRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+</resources>
