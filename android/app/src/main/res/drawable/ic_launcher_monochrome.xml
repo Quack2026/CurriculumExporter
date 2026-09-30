@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 13+ 主题图标（Monochrome）用的单色剪影：与前景同一套 path、同一档缩放，
+  只是不带上色 —— 系统只取这份图形的透明度，颜色由壁纸主题决定。
+
+  缩放值和前景保持一致（0.42），否则开了主题图标后图形会突然变大。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="701"
+    android:viewportHeight="701">
+    <group
+        android:pivotX="350.5"
+        android:pivotY="350.5"
+        android:scaleX="0.42"
+        android:scaleY="0.42">
+        <path
+            android:fillColor="#FF000000"
+            android:pathData="M700.5,120.01v580.49h-307.34v-277.03c102.45-101.15,204.89-202.31,307.34-303.46Z" />
+        <path
+            android:fillColor="#FF000000"
+            android:pathData="M700.5,0.5c-102.45,101.15-204.89,202.3-307.34,303.46v-117.96H0.5V0.5h700Z" />
+        <path
+            android:fillColor="#FF000000"
+            android:pathData="M316.56,499.28L316.56,700.5L0.5,700.5L0.5,278.68L192.48,278.68L192.48,499.28Z" />
+    </group>
+</vector>

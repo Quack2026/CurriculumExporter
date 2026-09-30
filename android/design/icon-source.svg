@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_图层_1" data-name="图层_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 701 701">
+  <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: none;
+        stroke: #231815;
+        stroke-linecap: round;
+        stroke-miterlimit: 10;
+      }
+    </style>
+  </defs>
+  <g>
+    <path d="M700.5,120.01v580.49h-307.34v-277.03c102.45-101.15,204.89-202.31,307.34-303.46Z"/>
+    <path d="M700.5.5c-102.45,101.15-204.89,202.3-307.34,303.46v-117.96H.5V.5h700Z"/>
+    <polygon points="316.56 499.28 316.56 700.5 .5 700.5 .5 278.68 192.48 278.68 192.48 499.28 316.56 499.28"/>
+  </g>
+  <g>
+    <polyline class="st0" points=".5 186 .5 .5 700.5 .5"/>
+    <polyline class="st0" points="316.56 700.5 .5 700.5 .5 278.68"/>
+    <polyline class="st0" points="700.5 120.01 700.5 700.5 393.16 700.5"/>
+    <line class="st0" x1=".5" y1="186" x2="192.48" y2="186"/>
+    <line class="st0" x1="192.48" y1="278.68" x2=".5" y2="278.68"/>
+    <line class="st0" x1="393.16" y1="423.47" x2="393.16" y2="499.28"/>
+    <polyline class="st0" points="192.48 186 393.16 186 393.16 303.96"/>
+    <polyline class="st0" points="316.56 499.28 192.48 499.28 192.48 278.68"/>
+    <path class="st0" d="M393.16,303.96C495.61,202.8,598.05,101.65,700.5.5"/>
+    <path class="st0" d="M393.16,423.47c102.45-101.15,204.89-202.31,307.34-303.46"/>
+    <line class="st0" x1="316.56" y1="499.28" x2="316.56" y2="700.5"/>
+    <line class="st0" x1="393.16" y1="700.5" x2="393.16" y2="499.28"/>
+  </g>
+</svg>

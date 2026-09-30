@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  启动图标（自适应图标）。
+
+  目录名刻意不带 -v26：minSdk 已经是 26，这个限定符是多余的，去掉能少一条 lint 警告。
+  monochrome 那一层给 Android 13+ 的「主题图标」用；旧系统解析到这里会直接忽略它，
+  不影响启动图标本身。
+-->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@color/mono_black" />
+    <background android:drawable="@color/icon_background" />
     <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
 </adaptive-icon>

@@ -259,6 +259,19 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
 
 原来用 `ColorDrawable(topBarColor)` 覆盖 `topBar.background`，会把 `bg_topbar` 底部那条 1dp 分隔线一起抹掉。现在顶栏底色交给 `bg_topbar`（solid `@color/topbar` + 底部 1dp `@color/topbar_line`），`ColorDrawable` 那行删掉。
 
+### 5.10 启动图标重做（第六批，正式版 1.0.0 的图标）
+
+旧图标是「黑底 + 3×3 等大方白格」，语义像计算器、小尺寸糊成一团。用户自己画了一版几何图形，源稿留在 `android/design/icon-source.svg`（Illustrator 导出、701×701 画布；三块实心区块，区块之间的缝隙构成十字与斜带）。
+
+落地方式：
+
+- **画布**：`ic_launcher_foreground.xml` 的 viewport 直接照抄源稿的 `701`，配 `108dp` 的边长让系统自己缩放 —— path 数据原样搬运，不用手算坐标。
+- **缩放 0.42 的来历**：系统只显示 108 画布**中心的 72dp**，而「绝不被任何遮罩裁掉」的安全区是中心**直径 66 的圆**。图形是正方形，要整个落进那个圆，边长最多 `66 / √2 ≈ 46.7` → `46.7 / 108 ≈ 0.43`，取 **0.42**（边长 45.4）。真机实测图形约占可见区的 63%，正是用户在预览里挑中的那个留白感。
+  **别把预览图里的百分比直接抄成 `scale`** —— 预览量的是「占整个 108 画布」，真机看到的是「占中心 72」，两者差 1.5 倍。
+- **描边那组 path 不要**：源稿 `<g>` 里的 `stroke` 元素（`polyline` / `line` / 两条 `c` 曲线）与三个实心 path 的边界完全重合，是 Illustrator 顺手导出的轮廓，留着只会糊边。
+- **日夜反色**：颜色走 `@color/icon_background` / `@color/icon_foreground` 两个语义色（亮色 = 近黑底 + 白图形，夜间对调），因此只有一份 `ic_launcher.xml`。icon 色刻意不跟 `accent`，避免被系统动态色染成紫。
+- **`<monochrome>` 层**：供 Android 13+ 主题图标使用，顺带消掉 `MonochromeLauncherIcon` 警告；它的 path 与缩放必须和前景完全一致（0.42），否则一开主题图标图形会突然变大。按 AOSP 的 `AdaptiveIconDrawable.inflate()` 实现，API 26–32 会跳过不认识的子标签，所以直接写在 `mipmap-anydpi-v26/ic_launcher.xml` 里是安全的。
+
 ## 6. 踩过的坑
 
 ### 6.1 设备交互类
@@ -288,6 +301,9 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
 - 用户偏好：界面**纯黑白**、跟随系统亮/暗、**不加第三方依赖**、文案全中文、**不引入动画库**。
 - 真机自动点时，先确认目标页在顶部再算坐标：`MainActivity` 的日志一长整页就能滚，滚到底后「高级设置」等按钮的**旧坐标会落到日志上**，表现为"点了没反应"（本轮为此白跑两轮）。可靠回顶：`am force-stop` + `am start`。**别用 `input swipe` 向下拖回顶** —— ColorOS 会把整屏中部的下滑手势当成"拉出通知栏"，通知栏一旦盖上，之后所有 `input tap` 全落在它上面；已经拉下来就用 `cmd statusbar collapse` 收掉。
 - `SettingsActivity` / `ResultActivity` **不是 exported**，`am start -n .../.SettingsActivity` 会被静默拒绝（不报错也不进页面），进这两页只能从界面点。
+- **`mipmap-anydpi-v26` 的 `-v26` 不能去掉**：想按 lint 的 `ObsoleteSdkInt` 建议把目录改名成 `mipmap-anydpi`（minSdk 已经是 26），实测**构建直接失败** —— `AAPT: error: resource mipmap/ic_launcher (aka com.quack.curriculumexporter:mipmap/ic_launcher) not found`，clean 后重试一样。留 `-v26`，这条警告当噪音。
+- **换启动图标后，机器上的图标缓存会骗人**：`install -r`、`am force-stop com.android.launcher` 都不刷新（`com.android.launcher` 是这台 ColorOS 的桌面包名）。**判据是桌面图标**，而「设置 → 应用详情」页的大图标有自己的缓存，重启设备后仍可能显示旧图标 —— 本批就因此误判过一轮"APK 没生效"，其实 `aapt2 dump xmltree --file res/drawable/ic_launcher_foreground.xml` 早就显示新 path 都在。重启设备后桌面才会显示新图标。
+- **ColorOS 桌面不按 night 配置取 App 图标**：`ui_night_mode=2` + 重启设备后，桌面图标仍是亮色版（黑底白图），没有走 `values-night` 的反色。资源表本身是对的（`aapt2 dump resources` 能看到 `color/icon_foreground` 有 `()` 与 `(night)` 两份），换成会重载图标的 launcher 才看得到反色。**别花时间在这上面排查**。
 
 ## 7. 当前状态与验证结果（2026-09-30 真机通过）
 
@@ -331,7 +347,7 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
   - 删 4 条 `UnusedResources`（`color/plain_on_accent`、`dimen/space_xxl`、`dimen/radius_l`、`string/dlg_dup_keep`）。**坑**：`values-night/colors.xml` 里有同名项，base 删了而 night 没删会报 `MissingDefaultResource` **Error**（已一并删掉）
   - 3 条 `Autofill`：`userInput` / `passInput` / `calendarNameInput` 加 `android:importantForAutofill="no"`
   - 1 条 `ClickableViewAccessibility`（`Anim.press`）：加 `@SuppressLint` 并注释理由——`onTouch` 返回 `false` 时 View 自己会 `performClick`，再补调会双触发，所以刻意不调
-- 有意保留、不打算修的警告：`Overdraw`×3（纯白背景是用户明确偏好）、`GetInstance`（ECB 是教务接口要求）、`MonochromeLauncherIcon`、`DataExtractionRules`、`UseCompoundDrawables`×2、`RedundantLabel`、`ObsoleteSdkInt`（`mipmap-anydpi-v26` 的 `-v26` 在 minSdk=26 下是多余限定符，改名为 `mipmap-anydpi` 即可消掉；会动到启动图标资源且收益极小，留着）
+- 有意保留、不打算修的警告（最新一轮 lint 后共 9 条）：`Overdraw`×3（纯白背景是用户明确偏好）、`GetInstance`（ECB 是教务接口要求）、`DataExtractionRules`、`UseCompoundDrawables`×2、`RedundantLabel`、`ObsoleteSdkInt`（`mipmap-anydpi-v26` 的 `-v26` 看着多余，**但实测不能去掉**，见 6.2）。`MonochromeLauncherIcon` 已在第六批补上 `<monochrome>` 层后消失。
 
 冒烟回归（第一批的新包）：重装后重新抓取并写入 → 日历仍 147 条、记录里 `_id` 范围不变、toast `日历已经是最新的：147 条没变化`；说明删 `Anim.reveal` 与加 `importantForAutofill="no"` 都没带来副作用。
 
@@ -395,6 +411,22 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
 | 亮色模式 | 主界面 / 结果页 / 面板 全部纯黑白灰，没有彩色残留；版本号显示正确（当时是 1.0.5，正式版为 1.0.0） |
 
 > 测试期间把「显示全部日历」开关来回拨过，收尾已恢复成默认关闭；设备已 `cmd uimode night no`、`svc power stayon false`，`/sdcard` 上的截图与 `ui*.xml`、本轮导出的 3 个 `.ics` 都已删除。
+
+**第六批（启动图标重做，设计见 5.10）**：`drawable/ic_launcher_foreground.xml` 换成用户手绘的几何图形、新增 `drawable/ic_launcher_monochrome.xml`、`mipmap-anydpi-v26/ic_launcher.xml` 补 `<monochrome>` 层；`values` / `values-night` 各加 `icon_background` / `icon_foreground` 两个语义色（日夜黑白对调）；源稿收进 `android/design/icon-source.svg`。
+
+构建：`BUILD SUCCESSFUL`、**20 个单测全过**（4 + 9 + 7）、lint **0 errors / 9 warnings**（`MonochromeLauncherIcon` 消失，其余 8 条同上）。
+
+真机验证（2026-10-01 00:05–00:12，OPPO PDRM00，亮色模式）：
+
+| 验证项 | 结果 |
+| --- | --- |
+| APK 里的资源 | `aapt2 dump xmltree --file res/drawable/ic_launcher_foreground.xml`：三条新 path + `<group scale=0.42>` 都在；`dump resources` 里 `color/icon_foreground` 有 `()` `#ffffffff` 与 `(night)` `#ff111113` 两份 |
+| 桌面图标（判据） | 黑底 + 白色几何图形，缩在安全区内**没有被剪角**，图形约占可见区 63% |
+| 遮罩模拟 | 按真实映射（108 画布中心 72）离线渲染：圆形遮罩下四角也不越界；48px 下十字与斜带仍可辨 |
+| 夜间反色 | 资源层正确，但 ColorOS 桌面重启后仍显示亮色版（原因见 6.2，不是本批的 bug） |
+| 反面对照 | `install -r`、`am force-stop com.android.launcher`、甚至重启设备后，「设置 → 应用详情」页的大图标仍显示**旧的九宫格** —— 那是设置页自己的缓存，别拿它当判据 |
+
+收尾：设备已 `cmd uimode night auto`、`svc power stayon false`、`am force-stop`；`/sdcard` 上本会话的截图全部删除（`Download/课表导出/` 里用户自己的 `.ics` 保留）。交付包 `curriculum-exporter-v1.0.0-android.apk` 已覆盖成新图标版（1003826 B，SHA256 `37C363B505C4C8B7D53FCCB0A00A3B99EC4AAC4C7AC26D68FF11C04E39840242`）。
 
 维护须知：
 

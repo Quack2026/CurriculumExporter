@@ -1,35 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 自适应图标前景：3x3 的课表格子，画在 108dp 画布的中间安全区内 -->
+<!--
+  自适应图标前景：用户设计的几何图形（三块区块，区块之间的缝隙构成十字与斜带）。
+  源稿见 android/design/icon-source.svg。
+
+  几点约定：
+  - viewport 保持源稿的 701，配合 108dp 的边长让系统自动缩放，path 数据可原样搬运；
+  - 系统只会显示 108 画布中心的 72dp，而「绝不被裁」的安全区是中心直径 66 的圆。
+    图形是正方形，对角线要落进那个圆，边长最多 66/√2 ≈ 46.7 → 缩放 0.42（边长 45.4）。
+    这个比例落到真机上，图形约占可见区的 62%，四周留一圈底色。
+  - 颜色走 icon_foreground / icon_background 两个语义色，暗色模式整体黑白对调，
+    所以不需要第二份图标文件。
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M25,25h15v15h-15z" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M46,25h15v15h-15z" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M67,25h15v15h-15z" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M25,46h15v15h-15z" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M46,46h15v15h-15z" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M67,46h15v15h-15z" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M25,67h15v15h-15z" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M46,67h15v15h-15z" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M67,67h15v15h-15z" />
+    android:viewportWidth="701"
+    android:viewportHeight="701">
+    <group
+        android:pivotX="350.5"
+        android:pivotY="350.5"
+        android:scaleX="0.42"
+        android:scaleY="0.42">
+        <path
+            android:fillColor="@color/icon_foreground"
+            android:pathData="M700.5,120.01v580.49h-307.34v-277.03c102.45-101.15,204.89-202.31,307.34-303.46Z" />
+        <path
+            android:fillColor="@color/icon_foreground"
+            android:pathData="M700.5,0.5c-102.45,101.15-204.89,202.3-307.34,303.46v-117.96H0.5V0.5h700Z" />
+        <path
+            android:fillColor="@color/icon_foreground"
+            android:pathData="M316.56,499.28L316.56,700.5L0.5,700.5L0.5,278.68L192.48,278.68L192.48,499.28Z" />
+    </group>
 </vector>

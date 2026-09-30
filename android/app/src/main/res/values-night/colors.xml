@@ -32,6 +32,10 @@
     <color name="field_bg">#FF232327</color>
     <color name="ghost_line">#FF3A3A40</color>
 
+    <!-- 启动图标：跟亮色对调 —— 白底 + 近黑图形。 -->
+    <color name="icon_background">#FFFFFFFF</color>
+    <color name="icon_foreground">#FF111113</color>
+
     <!-- 夜间主题也提供旧资源名，drawable/style 无需分叉。 -->
     <color name="mono_black">@color/text_primary</color>
     <color name="mono_gray_text">@color/text_secondary</color>

@@ -41,6 +41,14 @@
     <color name="field_bg">#FFF4F4F6</color>
     <color name="ghost_line">#FFD8D8DE</color>
 
+    <!--
+      启动图标：亮色下是「近黑底 + 白图形」，暗色下整体对调（见 values-night）。
+      图形缩在安全区内、四周会露出一圈底色，所以底色也得跟着反色 —— 否则暗色桌面上
+      会是一块突兀的黑方块。图标不跟随 accent（动态色）走，避免被系统染成紫色。
+    -->
+    <color name="icon_background">#FF111113</color>
+    <color name="icon_foreground">#FFFFFFFF</color>
+
     <!-- 旧资源名保留为兼容别名，所有 drawable/style 会随主题自动切换。 -->
     <color name="mono_black">@color/text_primary</color>
     <color name="mono_gray_text">@color/text_secondary</color>
