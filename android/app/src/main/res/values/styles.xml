@@ -4,7 +4,7 @@
     <style name="TopBar">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/topbar_height</item>
-        <item name="android:background">@color/accent</item>
+        <item name="android:background">@drawable/bg_topbar</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:orientation">horizontal</item>
     </style>
@@ -59,6 +59,9 @@
       按钮一律用 TextView + 这些 style，不用平台 <Button>：
       Widget.Material.Button 自带 backgroundTint，会把自定义圆角背景整个涂掉，
       而且还有全大写/最小宽度/升降动画等一堆需要逐个关掉的默认值。
+
+      缩放反馈由 Anim.press() 统一驱动（按下压到 95%、抬手带过冲弹回、顺带一次轻触感），
+      所以这里不用 android:stateListAnimator —— 那套没法做过冲回弹，也没法带触感。
     -->
     <style name="ButtonPrimary">
         <item name="android:layout_width">match_parent</item>
@@ -68,7 +71,6 @@
         <item name="android:focusable">true</item>
         <item name="android:gravity">center</item>
         <item name="android:padding">0dp</item>
-        <item name="android:stateListAnimator">@animator/button_press</item>
         <item name="android:textColor">@color/button_text_primary</item>
         <item name="android:textSize">@dimen/text_body</item>
         <item name="android:textStyle">bold</item>
@@ -82,7 +84,6 @@
         <item name="android:focusable">true</item>
         <item name="android:gravity">center</item>
         <item name="android:padding">0dp</item>
-        <item name="android:stateListAnimator">@animator/button_press</item>
         <item name="android:textColor">@color/button_text_secondary</item>
         <item name="android:textSize">@dimen/text_small</item>
     </style>
@@ -146,6 +147,13 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">@color/mono_black</item>
         <item name="android:textSize">@dimen/text_body</item>
+    </style>
+
+    <!-- 整行可点的设置行：点文字也能切换（原来只有右边那个小开关能点） -->
+    <style name="SettingRow.Clickable" parent="SettingRow">
+        <item name="android:background">@drawable/bg_row_touch</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
     </style>
 
     <style name="SettingHint">

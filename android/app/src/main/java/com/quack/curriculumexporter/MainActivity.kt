@@ -15,7 +15,6 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.Switch
 import android.widget.TextView
-import android.widget.Toast
 
 /**
  * 主界面：输入学号密码 → 抓整学期 → 跳到结果页。
@@ -27,14 +26,17 @@ class MainActivity : Activity() {
     private lateinit var userInput: EditText
     private lateinit var passInput: EditText
     private lateinit var fetchBtn: TextView
+    private lateinit var rangeRow: View
     private lateinit var rangeText: TextView
     private lateinit var militarySwitch: Switch
+    private lateinit var optionRow: View
     private lateinit var logView: TextView
     private lateinit var mainScroll: ScrollView
-    private lateinit var busyBar: View
+    private lateinit var fetchProgress: View
     private lateinit var cardInput: View
     private lateinit var cardOption: View
     private lateinit var settingsBtn: View
+    private lateinit var versionText: TextView
     private lateinit var banner: View
     private lateinit var bannerTitle: TextView
     private lateinit var bannerText: TextView
@@ -70,14 +72,17 @@ class MainActivity : Activity() {
         userInput = findViewById(R.id.userInput)
         passInput = findViewById(R.id.passInput)
         fetchBtn = findViewById(R.id.fetchBtn)
+        rangeRow = findViewById(R.id.rangeRow)
         rangeText = findViewById(R.id.rangeText)
         militarySwitch = findViewById(R.id.militarySwitch)
+        optionRow = findViewById(R.id.optionRow)
         logView = findViewById(R.id.logView)
         mainScroll = findViewById(R.id.mainScroll)
-        busyBar = findViewById(R.id.busyBar)
+        fetchProgress = findViewById(R.id.fetchProgress)
         cardInput = findViewById(R.id.cardInput)
         cardOption = findViewById(R.id.cardOption)
         settingsBtn = findViewById(R.id.settingsBtn)
+        versionText = findViewById(R.id.versionText)
         banner = findViewById(R.id.banner)
         bannerTitle = findViewById(R.id.bannerTitle)
         bannerText = findViewById(R.id.bannerText)
@@ -92,18 +97,26 @@ class MainActivity : Activity() {
 
         settingsBtn.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
+            Anim.pageForward(this)
         }
-        Anim.press(settingsBtn)
-        findViewById<TextView>(R.id.versionText).text =
-            getString(R.string.version_label, AppInfo.versionName(this))
+        Anim.press(settingsBtn, pressed = 0.98f)
+        versionText.text = getString(R.string.version_label, AppInfo.versionName(this))
 
-        // 单击按上次选定的范围直接开抓；想换范围就长按弹面板（面板里先选、再按「完成」）
+        // 单击按上次选定的范围直接开抓；想换范围就点下面那行，或者长按这颗按钮
         fetchBtn.setOnClickListener { if (running) requestCancel() else startFetchWithSavedRange() }
         fetchBtn.setOnLongClickListener {
             if (!running) showRangeMenu()
             // 抓取中按钮是「取消获取」，长按不弹菜单；无论如何都消费掉这次长按
             true
         }
+        Anim.press(fetchBtn)
+
+        // 范围那一行整行可点：范围这项设置从此看得见、点得到
+        rangeRow.setOnClickListener { if (!running) showRangeMenu() }
+        Anim.press(rangeRow, pressed = 0.97f)
+
+        // 选项行整行可点，不用非得戳中右边那个小开关
+        optionRow.setOnClickListener { militarySwitch.toggle() }
         updateRangeLabel()
 
         bannerClose.setOnClickListener { Anim.hideBar(banner) }
@@ -147,6 +160,11 @@ class MainActivity : Activity() {
         if (pendingPreview) {
             pendingPreview = false
             openResult()
+        }
+        // 别的页面留下的话（比如「设置已保存」）：等窗口画完再浮，否则量不到位置
+        AppState.pendingNotice?.let { note ->
+            AppState.pendingNotice = null
+            window.decorView.post { Snack.show(this, note) }
         }
     }
 
@@ -202,7 +220,7 @@ class MainActivity : Activity() {
         running = true
         cancelRequested = false
         fetchBtn.text = getString(R.string.btn_cancel)
-        busyBar.visibility = View.VISIBLE
+        fetchProgress.visibility = View.VISIBLE
         setInputsEnabled(false)
         logView.text = ""
         appendLog("开始：$userNo")
@@ -287,10 +305,9 @@ class MainActivity : Activity() {
     private fun updateRangeLabel() {
         val range = TermWeeks.ranges(TermWeeks.today(this))[savedRangeIndex()]
         rangeText.text = if (range.needsFullFetch) {
-            getString(R.string.range_fallback_full)
+            getString(R.string.range_fallback_short)
         } else {
-            getString(R.string.range_label, range.minWeek, range.maxWeek) +
-                "\n" + getString(R.string.range_edit_hint)
+            getString(R.string.range_label, range.minWeek, range.maxWeek)
         }
     }
 
@@ -376,7 +393,7 @@ class MainActivity : Activity() {
         running = false
         cancelRequested = false
         fetchBtn.text = getString(R.string.btn_fetch)
-        busyBar.visibility = View.GONE
+        fetchProgress.visibility = View.GONE
         setInputsEnabled(true)
         // 抓取途中系统切过深浅色：现在没有正在跑的任务了，补上那次重建
         if (pendingThemeRecreate) {
@@ -387,8 +404,7 @@ class MainActivity : Activity() {
 
     private fun openResult() {
         startActivity(Intent(this, ResultActivity::class.java))
-        @Suppress("DEPRECATION")
-        overridePendingTransition(R.anim.slide_in_up, R.anim.hold)
+        Anim.pageForward(this)
     }
 
     // ------------------------------------------------------------ 小工具
@@ -445,7 +461,7 @@ class MainActivity : Activity() {
         ) {
             val cm = getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager ?: return@show
             cm.setPrimaryClip(ClipData.newPlainText("crash", trace))
-            Toast.makeText(this, R.string.crash_copied, Toast.LENGTH_SHORT).show()
+            Snack.show(this, getString(R.string.crash_copied))
         }
     }
 
@@ -469,7 +485,9 @@ class MainActivity : Activity() {
 
     private fun playIntro() {
         // 日志会在抓取过程中持续增长，不参与 alpha/translation 动画。
-        Anim.stagger(listOf(cardInput, cardOption, fetchBtn, settingsBtn))
+        Anim.stagger(
+            listOf(cardInput, cardOption, fetchBtn, rangeRow, settingsBtn, versionText)
+        )
     }
 
     private companion object {

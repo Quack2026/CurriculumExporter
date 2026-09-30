@@ -12,7 +12,6 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.ScrollView
 import android.widget.TextView
-import android.widget.Toast
 
 /**
  * 结果页：先让用户看一眼课表对不对，再决定往哪落。
@@ -89,7 +88,11 @@ class ResultActivity : Activity() {
         writeBtnLabel = writeBtn.text
         writeBtn.setOnClickListener { onWriteButton() }
         exportBtn.setOnClickListener { saveIcs(shareAfter = false) }
-        shareBtn.setOnClickListener { saveIcs(shareAfter = true) }
+        // 已经从这边分享过就复用那份文件；没分享过就先存一份再弹系统分享面板
+        shareBtn.setOnClickListener {
+            val uri = savedUri
+            if (uri != null) share(savedName, uri) else saveIcs(shareAfter = true)
+        }
 
         Anim.press(findViewById(R.id.backBtn))
         Anim.press(writeBtn)
@@ -101,8 +104,7 @@ class ResultActivity : Activity() {
 
     override fun finish() {
         super.finish()
-        @Suppress("DEPRECATION")
-        overridePendingTransition(R.anim.hold, R.anim.slide_out_down)
+        Anim.pageBack(this)
     }
 
     override fun onRequestPermissionsResult(
@@ -115,7 +117,7 @@ class ResultActivity : Activity() {
             if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
                 doSaveIcs(pendingShareAfterGrant)
             } else {
-                toast("没拿到存储权限，文件存不下来。可以改用「写入系统日历」。")
+                notice("没拿到存储权限，文件存不下来。可以改用「写入系统日历」。")
             }
             return
         }
@@ -123,7 +125,7 @@ class ResultActivity : Activity() {
         if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
             chooseCalendar()
         } else {
-            toast("没拿到日历权限。可以改用「保存 .ics」，再自己导进日历。")
+            notice("没拿到日历权限。可以改用「保存 .ics」，再自己导进日历。")
         }
     }
 
@@ -160,13 +162,15 @@ class ResultActivity : Activity() {
     }
 
     private fun switchMode(byCourse: Boolean) {
-        // 这里刻意不用 Anim.crossfade：previewText 里装着整学期课表（上千行、几万像素高），
-        // 对它做 alpha 淡入淡出等于要求滚动容器每帧整块重绘。
-        // 与其担这个渲染风险，不如直接把内容换掉 —— 顺带把滚动位置归零，观感同样是「翻了一页」。
+        // 这里刻意不给 previewText 做淡入淡出：previewText 里装着整学期课表（上千行、
+        // 几万像素高），对它做 alpha 动画等于让滚动容器每帧整块重绘 —— View 一旦
+        // alpha<1 或 translationY!=0，绘制就走离屏合成，会照控件尺寸开一张大位图。
+        // 与其担这个渲染风险，不如把「翻页感」交给滚动：换完内容平滑滚回顶部，
+        // 这一步只动滚动偏移，不碰任何 View 的绘制属性。
         previewText.text =
             if (byCourse) SchedulePreview.byCourse(this, schedule)
             else SchedulePreview.byWeek(this, schedule)
-        resultScroll.post { resultScroll.scrollTo(0, 0) }
+        resultScroll.post { resultScroll.smoothScrollTo(0, 0) }
     }
 
     private fun playIntro() {
@@ -187,7 +191,7 @@ class ResultActivity : Activity() {
 
     private fun startWriteToCalendar() {
         if (AppState.events.isEmpty()) {
-            toast("没有可写入的事件。")
+            notice("没有可写入的事件。")
             return
         }
         if (!CalendarWriter.hasPermission(this)) {
@@ -234,7 +238,7 @@ class ResultActivity : Activity() {
             if (showAll) writer.allCalendarsForPicker()
             else writer.writableCalendars()
         } catch (e: Exception) {
-            toast("读不到手机里的日历：${e.message ?: e.javaClass.simpleName}")
+            notice("读不到手机里的日历：${e.message ?: e.javaClass.simpleName}")
             return
         }
 
@@ -283,7 +287,7 @@ class ResultActivity : Activity() {
     private fun createAndWriteCalendar(writer: CalendarWriter) {
         setActionsEnabled(false)
         val name = SettingsStore.calendarName(this)
-        toast("正在创建「$name」…")
+        notice("正在创建「$name」…")
         Thread {
             try {
                 val calendar = writer.createCourseCalendar(name)
@@ -344,7 +348,7 @@ class ResultActivity : Activity() {
     private fun writeToCalendar(writer: CalendarWriter, calendar: CalendarAccount) {
         val events = AppState.events
         if (events.isEmpty()) {
-            toast("没有可写入的事件。")
+            notice("没有可写入的事件。")
             return
         }
         setSyncing(true)
@@ -363,16 +367,16 @@ class ResultActivity : Activity() {
                     calendar.id,
                     plan,
                     isCancelled = { cancelRequested },
-                    onStage = { stage -> runOnUiThread { toast(stage) } },
+                    onStage = { stage -> runOnUiThread { notice(stage) } },
                 )
                 CalendarWriter.saveRecord(this, calendar.id, calendar.label(), record)
 
                 val cancelled = cancelRequested
                 runOnUiThread {
                     when {
-                        cancelled -> toast("已停下。已经对齐的部分留着了，下次同步接着来。")
-                        plan.changes == 0 -> toast("日历已经是最新的：${plan.keep} 条没变化。")
-                        else -> toast(summaryOf(plan, calendar))
+                        cancelled -> notice("已停下。已经对齐的部分留着了，下次同步接着来。")
+                        plan.changes == 0 -> notice("日历已经是最新的：${plan.keep} 条没变化。")
+                        else -> notice(summaryOf(plan, calendar))
                     }
                 }
             } catch (e: Exception) {
@@ -401,8 +405,10 @@ class ResultActivity : Activity() {
         // 同步期间这个按钮要留着能点，点了就是取消
         writeBtn.isEnabled = true
         writeBtn.text = if (on) getString(R.string.btn_cancel_sync) else writeBtnLabel
+        // 同步中让按钮「呼吸」：这件事要跑一阵子，按钮得自己说明它还在动
+        if (on) Anim.breathe(writeBtn) else Anim.stopBreathe(writeBtn)
         exportBtn.isEnabled = !on
-        shareBtn.isEnabled = !on && savedUri != null
+        shareBtn.isEnabled = !on
     }
 
     private fun summaryOf(plan: CalendarWriter.SyncPlan, calendar: CalendarAccount): String =
@@ -418,7 +424,7 @@ class ResultActivity : Activity() {
 
     private fun saveIcs(shareAfter: Boolean) {
         if (AppState.events.isEmpty()) {
-            toast("没有可导出的事件。")
+            notice("没有可导出的事件。")
             return
         }
         // Android 10+ 走 MediaStore 不需要任何权限；9 及以下写公共 Download 目录必须先拿到存储权限
@@ -450,7 +456,7 @@ class ResultActivity : Activity() {
                     if (shareAfter) {
                         share(name, uri)
                     } else {
-                        toast("已保存到「下载/${Exporter.SUB_DIR}/$name」。")
+                        notice("已保存到「下载/${Exporter.SUB_DIR}/$name」。")
                     }
                 }
             } catch (e: Exception) {
@@ -490,11 +496,12 @@ class ResultActivity : Activity() {
     private fun setActionsEnabled(enabled: Boolean) {
         writeBtn.isEnabled = enabled
         exportBtn.isEnabled = enabled
-        shareBtn.isEnabled = enabled && savedUri != null
+        // 「分享」不再依赖「先保存 .ics」：没存过就现存一份再分享，少一步操作
+        shareBtn.isEnabled = enabled
     }
 
-    private fun toast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    private fun notice(message: String) {
+        Snack.show(this, message)
     }
 
     private companion object {

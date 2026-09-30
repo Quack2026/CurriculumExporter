@@ -2,59 +2,77 @@
 <!--
   底部面板的壳子。内容由 Sheet.kt 往 sheetBody 里塞 item_choice 行，
   这样范围菜单和日历选择共用同一套外观与交互：先点选项，再按「完成」。
+
+  外面套一层 FrameLayout，是为了让遮罩（scrim）也归这个布局管：
+  开合时遮罩跟着面板一起淡入淡出，而不是「啪一下变暗、面板才慢慢升上来」。
 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@drawable/bg_sheet"
-    android:orientation="vertical"
-    android:paddingBottom="@dimen/space_l">
+    android:layout_height="match_parent">
 
-    <View style="@style/SheetHandle" />
+    <View
+        android:id="@+id/sheetScrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/scrim" />
 
-    <TextView
-        android:id="@+id/sheetTitle"
-        style="@style/SheetTitle"
-        tools:text="选择获取范围" />
-
-    <TextView
-        android:id="@+id/sheetHint"
-        style="@style/SheetHint"
-        android:visibility="gone"
-        tools:text="现在是第 4 周。范围越窄越快。"
-        tools:visibility="visible" />
-
-    <ScrollView
-        android:id="@+id/sheetScroll"
+    <LinearLayout
+        android:id="@+id/sheetPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/space_m"
-        android:clipToPadding="false"
-        android:paddingStart="@dimen/space_m"
-        android:paddingEnd="@dimen/space_m"
-        android:scrollbars="none">
+        android:layout_gravity="bottom"
+        android:background="@drawable/bg_sheet"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/space_l">
 
-        <LinearLayout
-            android:id="@+id/sheetBody"
+        <View
+            android:id="@+id/sheetHandle"
+            style="@style/SheetHandle" />
+
+        <TextView
+            android:id="@+id/sheetTitle"
+            style="@style/SheetTitle"
+            tools:text="选择获取范围" />
+
+        <TextView
+            android:id="@+id/sheetHint"
+            style="@style/SheetHint"
+            android:visibility="gone"
+            tools:text="现在是第 4 周。范围越窄越快。"
+            tools:visibility="visible" />
+
+        <ScrollView
+            android:id="@+id/sheetScroll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
-    </ScrollView>
+            android:layout_marginTop="@dimen/space_m"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/space_m"
+            android:paddingEnd="@dimen/space_m"
+            android:scrollbars="none">
 
-    <TextView
-        android:id="@+id/sheetConfirm"
-        style="@style/ButtonPrimary"
-        android:layout_marginStart="@dimen/space_l"
-        android:layout_marginTop="@dimen/space_m"
-        android:layout_marginEnd="@dimen/space_l"
-        android:text="@string/dlg_done" />
+            <LinearLayout
+                android:id="@+id/sheetBody"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
 
-    <TextView
-        android:id="@+id/sheetSecondary"
-        style="@style/ButtonText"
-        android:layout_marginStart="@dimen/space_l"
-        android:layout_marginTop="@dimen/space_xs"
-        android:layout_marginEnd="@dimen/space_l"
-        android:visibility="gone" />
-</LinearLayout>
+        <TextView
+            android:id="@+id/sheetConfirm"
+            style="@style/ButtonPrimary"
+            android:layout_marginStart="@dimen/space_l"
+            android:layout_marginTop="@dimen/space_m"
+            android:layout_marginEnd="@dimen/space_l"
+            android:text="@string/dlg_done" />
+
+        <TextView
+            android:id="@+id/sheetSecondary"
+            style="@style/ButtonText"
+            android:layout_marginStart="@dimen/space_l"
+            android:layout_marginTop="@dimen/space_xs"
+            android:layout_marginEnd="@dimen/space_l"
+            android:visibility="gone" />
+    </LinearLayout>
+</FrameLayout>

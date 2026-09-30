@@ -1,6 +1,6 @@
 # 交接文档 · CurriculumExporter 安卓版
 
-> 更新时间：2026-09-30 深夜（v1.0.4，versionCode 5）
+> 更新时间：2026-09-30 深夜（v1.0.5，versionCode 6）
 > 读这份文档的人默认要**继续改这个项目**；下游的「用户使用说明」在 `README.md`。
 
 ## 1. 项目坐标
@@ -9,7 +9,7 @@
 |---|---|
 | 源码 | `C:\Tools\CurriculumExporter\android`（仓库 `Quack2026/CurriculumExporter` 的 `android/` 子目录，分支 `main`；旧路径 `C:\Tools\CurriculumExporter-Android` 只是个 junction） |
 | 包名 | `com.quack.curriculumexporter` |
-| 版本 | versionCode **5** / versionName **1.0.4** |
+| 版本 | versionCode **6** / versionName **1.0.5** |
 | SDK | minSdk 26 · targetSdk 35 · compileSdk 35 · buildTools **35.0.0**（钉住，避免去下损坏的 34.0.0） |
 | 技术栈 | Kotlin + XML，**0 个第三方运行时依赖**（仅测试用 junit 4.13.2 + org.json:json:20240303） |
 | Windows 原版参考 | `C:\Tools\CurriculumExporter`（C#/.NET 4.8，`src/Network.cs` 是接口与加密的权威实现，**只读参考**；和安卓版同属一个仓库，仓库根就是它） |
@@ -25,7 +25,7 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
 - 脚本按**自身所在目录**定位项目，所以目录整体搬家也不用改脚本。
 - 脚本内部跑 `lintDebug assembleDebug testDebugUnitTest --console=plain`，日志写 `build.log`，末行打印 APK 路径与单测报告名。
 - 产物：`app\build\outputs\apk\debug\app-debug.apk`（release 沿用 debug 签名）。
-- 脚本**不复制** APK 到项目根；根目录那份 `curriculum-exporter-v1.0.4-android.apk` 是手工放的历史包，需要时手动同步。
+- 脚本**不复制** APK 到项目根；根目录那份 `curriculum-exporter-v1.0.5-android.apk` 是手工放的历史包，需要时手动同步。
 
 工具链位置（本机实测）：
 
@@ -198,6 +198,62 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
 
 另外 `SettingsStore.dynamicTheme` 默认值由 `true` 改成 **`false`**：旧默认是跟随系统主题色，A12+ 会取壁纸色（实机上是紫蓝），与「纯黑白」的既定偏好冲突。要跟色的仍可在「高级设置 → 外观」里打开。
 
+### 5.9 动效与交互重做（第五批，v1.0.5）
+
+**用户诉求（原话要点）**：「动画效果太弱了，各种按键反馈都很弱，页面功能交互设计的感觉有点糟糕，还有页面切换」，浮窗弹出的动画也要有，并明确授权自主设计（不用问）。
+
+**一、按压反馈统一成 `Anim.press(view, pressed, haptic)`**
+
+原先是 XML `stateListAnimator` + `button_press.xml`（只改 `scaleX/Y`），问题：没法做过冲回弹、带不了触感、每个按钮都得在布局里挂一次。现在全部删掉 XML 那套，改由 `Anim.press` 在运行时挂 `OnTouchListener`：
+
+- 按下 120ms 压到 `pressed`（整行卡片 0.97 / 按钮 0.95 / 对话框按钮 0.94），抬手 300ms 用 `OvershootInterpolator(3.2f)` 弹回。
+- `onTouch` 返回 **`false`**，把点击与长按交回 View 自己处理 —— 「获取课表」的长按菜单就是这么保住的。也正因为返回 false，**不要**在里面补 `performClick()`（会双触发），lint 的 `ClickableViewAccessibility` 已加 `@SuppressLint` 并注明理由。
+- 触感用 `KEYBOARD_TAP`。
+
+**二、页面转场**
+
+`Anim.pageForward/pageBack` + `anim/page_in|page_out|page_in_back|page_out_back.xml`（横向推进：新页从右边 8% 推入、旧页往左退 6%），由 `MainActivity`/`ResultActivity`/`SettingsActivity` 里的 `overridePendingTransition` 调用。测试机是 API 33，没做 API 34 那种新的转场 API 分支。
+
+**三、浮层动画全部自绘（弃用 window `windowAnimationStyle`）**
+
+`sheet_in/out.xml`、`hold.xml` 已删除，`AppDialogTheme` 的 `windowAnimationStyle` 也删了。原因：window 动画是整窗（含遮罩）一起动，做不出「遮罩淡入 + 内容单独上滑」的层次，而且「遮罩」其实是 window 的 dim，想同步淡入淡出做不到。
+
+现在 `sheet.xml` / `dialog_message.xml` 的外层是 `FrameLayout`：一层 `sheetScrim`/`dialogScrim`（`@color/scrim`）+ 一层内容面板；window 背景透明、`setDimAmount(0f)`。
+
+- Sheet：`root.post` 里 panel 从自身高度滑入 300ms、scrim 220ms 淡入，然后行**错峰**入场（`100 + i*40` ms）。预置 `scrim.alpha=0f; panel.alpha=0f` 防第一帧闪一下。
+- 行之间补了 1dp 分隔线（`@color/app_divider`，左右各缩进 12dp），并入入场动画列表（`entries`：行 + 线都要动，`rows` 只存可选行）。
+- **下滑收起**：`attachDrag` 只绑在**把手 + 标题**上（`sheetHandle`/`sheetTitle`），不绑列表 —— 绑了就抢列表的滚动。拖过面板高度 28% 就 `close()`。
+- `Anim.pulse(viewDot)`：选中行时圆点弹一下。
+- DialogBox：`Anim.popIn(card, 0.9f)`（alpha + scale 0.9→1，`OvershootInterpolator`）；关闭时先播 card 的 alpha/scale(0.94) + scrim 淡出，`withEndAction` 里才 `dialog.dismiss()`。
+
+**四、新增两个自绘组件**
+
+- `ProgressLine.kt`：抓取进度条（轨道 + 一块 28% 宽的块 900ms 来回扫动），替掉了系统 `ProgressBar`（转圈那套在黑白界面里像半成品）。`onAttachedToWindow` / `onVisibilityChanged` 里启停 `ValueAnimator`，页面不可见时不空转。
+- `Snack.kt`：底部浮出的提示条，替掉全部 `Toast`（结果页 13 处 `toast()` 已更名 `notice()`）。挂在 `android.R.id.content` 上、`@color/accent` 反相底 + `@color/on_accent` 字，淡入 240ms、2.6s 后淡出。设置页保存提示走 `AppState.pendingNotice`，回到主界面时由 `MainActivity.onResume` 消费（设置页 finish 得太快，Snack 挂在它身上会来不及看见）。
+
+**五、交互设计改动**
+
+| 位置 | 原来 | 现在 |
+|---|---|---|
+| 主界面改范围 | 只有长按「获取课表」能看到，靠一行灰字提示 | 按钮下面**可点的胶囊行**（`rangeRow` + `bg_range_row` + `ic_chevron_down`），点和长按都能开面板 |
+| 主界面「高级设置」 | 一个小按钮 | 整行卡片（`bg_card_clickable` + `ic_chevron_right`） |
+| 设置页每一行 | 只有右边 Switch 能点 | 整行可点（`SettingRow.Clickable` + `bg_row_touch`），点哪都切换 + 触感 |
+| 设置页入场 | 对整块容器做动画 | `Anim.staggerChildren(settingsContent)` 逐行错峰（整块大容器做动画有 OOM 隐患，见 6.2） |
+| 「分享 .ics」 | 必须先「保存 .ics」才可点（`savedUri != null` 才 enable） | 随时可点：没存过就自动先存一份再分享 |
+| 分段控件 | 切段是硬切 | 滑块 280ms `OvershootInterpolator(1.4f)` 弹性；点已选中的段不再重复动画 |
+| 结果页 | 切「按周/按课程」后停在原滚动位置 | `smoothScrollTo(0,0)` 回到顶部 |
+| 写入中日历按钮 | 无反馈 | `Anim.breathe`（1→1.03 无限往返）提示"正在写" |
+
+**六、暗色分段控件对比度（修上一批的遗留观察）**
+
+`values` / `values-night` 各给一组：`segment_track`（亮 `#FFE6E6EA` / 暗 `#FF1C1C1F`）、`segment_thumb`（亮白 / 暗 `#FF3C3C43`）、`segment_thumb_line`（暗色下 1dp 描边，白滑块在深底上才不糊）。
+
+**坑：`SegmentedControl` 的滑块 `elevation` 会把选中段的文字盖住。** `activity_result.xml` 里 `segModeThumb` 原本有 `android:elevation="2dp"`，滑块后添加、又带 elevation → 画在文字之上，选中段文字完全消失（截图放大才看出来）。删掉 elevation 即可（同 elevation 时按添加顺序，滑块在下、文字在上）。
+
+**七、`UiTheme.apply` 不再涂顶栏背景色**
+
+原来用 `ColorDrawable(topBarColor)` 覆盖 `topBar.background`，会把 `bg_topbar` 底部那条 1dp 分隔线一起抹掉。现在顶栏底色交给 `bg_topbar`（solid `@color/topbar` + 底部 1dp `@color/topbar_line`），`ColorDrawable` 那行删掉。
+
 ## 6. 踩过的坑
 
 ### 6.1 设备交互类
@@ -222,7 +278,7 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
 - `windowLightNavigationBar` 只能放 `values-v27`。
 - API 26–28 写公共 Download 需要 `WRITE_EXTERNAL_STORAGE`；API 29+ 走 MediaStore。
 - Activity 间传结果用静态 `AppState`，**不要塞 Intent extra**。
-- 颜色取用一律 `context.getColor(...)`。
+- 颜色取用一律 `context.getColor(...)`；**但「强调色」不能直接读 `R.color.accent`** —— 它在 `values-v31` / `values-night-v31` 里指向系统动态色（A12+ 取壁纸色系，实机上是淡紫），而关掉动态色时界面走的是 `AppThemePlain` + `@color/plain_accent`（黑白）。直接读资源会绕开主题，于是纯黑白界面里冒出一条紫底提示条（v1.0.5 的 `Snack` 就这么中过一次）。要取"当前主题正在用的"强调色：`theme.resolveAttribute(android.R.attr.colorAccent, value, true)`，再 `getColor(value.resourceId)`；文字对比色用 `UiTheme.onAccent(color)` 现算，别读 `on_accent`。
 - `SystemBars.install(this, root, topBar)` 负责 edge-to-edge 让位。
 - 用户偏好：界面**纯黑白**、跟随系统亮/暗、**不加第三方依赖**、文案全中文、**不引入动画库**。
 - 真机自动点时，先确认目标页在顶部再算坐标：`MainActivity` 的日志一长整页就能滚，滚到底后「高级设置」等按钮的**旧坐标会落到日志上**，表现为"点了没反应"（本轮为此白跑两轮）。可靠回顶：`am force-stop` + `am start`。**别用 `input swipe` 向下拖回顶** —— ColorOS 会把整屏中部的下滑手势当成"拉出通知栏"，通知栏一旦盖上，之后所有 `input tap` 全落在它上面；已经拉下来就用 `cmd statusbar collapse` 收掉。
@@ -313,9 +369,29 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
 | 导出 | 「保存 .ics」→ toast `已保存到「下载/课表导出/广理课表-….ics」`（验证用的那份已从手机删掉） |
 | 崩溃记录可消费 | 点「关闭」后 `am force-stop` + 重启 → 不再弹 |
 
-> 遗留观察（未改）：暗色下 `SegmentedControl` 选中项的对比度偏弱，能用但不够一眼可辨；下次动它时顺手把选中态写成「浅底 + 深字」的反相块会更好认。
+> 上面那条「暗色下 `SegmentedControl` 对比度偏弱」的遗留观察已在第五批修掉（见下）。
+
+**第五批（动效与交互重做，设计见 5.9）**：`Anim.kt` 重写（`press` / `stagger` / `popIn` / `pulse` / `breathe` / `pageForward|Back`）、新增 `ProgressLine.kt` 与 `Snack.kt`、`Sheet.kt` / `DialogBox.kt` 动画层重写（`sheet.xml` / `dialog_message.xml` 外层改 `FrameLayout`，自绘 scrim + 内容），`MainActivity` / `ResultActivity` / `SettingsActivity` / `SegmentedControl` / `UiTheme` 配套改动，布局与配色资源一批调整（新增 `bg_topbar` / `bg_range_row` / `bg_row_touch` / `ic_chevron_down` / `page_*.xml`；删除 `stateListAnimator` 那套、`sheet_in|out` / `hold` / `slide_in_up` / `slide_out_down` / `button_press`）。
+
+构建：`BUILD SUCCESSFUL`、**20 个单测全过**（4 + 9 + 7）、lint **0 errors / 10 warnings**（与上一批同类，全是既有噪音）。
+
+真机验证（同日 22:57–23:04，OPPO PDRM00，校历第 4 周，`versionName 1.0.5`）：
+
+| 验证项 | 结果 |
+| --- | --- |
+| 分段控件选中段文字 | 删掉滑块 `elevation` 后「按周看」文字清晰可见（暗色、亮色都拍过）；切「按课程看」→ 滑块弹到右侧、内容改按课程分组，回顶部 |
+| 面板分隔线 | 暗色面板四行之间 1dp 细线可见、左右缩进一致；选中行浅底 + 实心圆对勾 + 行底淡色 |
+| 拖拽收起 | 从把手向下拖 350ms → 面板收起、scrim 同步淡出、主界面停在原位置 |
+| 干净抓取 | 9 秒到结果页：「谢铭浩 · 26本科电子01班」「13 周 · 152 条课程 · 153 个日历事件」（未抓到 14/15/19/20 周，与前几批一致） |
+| 提示条配色 | 「已保存到「下载/课表导出/…」」——修之前是**紫底**（`R.color.accent` 在 API 31+ 指向系统动态色），改成读主题 `colorAccent` 后是白底黑字，与按钮同色 |
+| 设置页整行可点 | `uiautomator dump` 前后对比：点「显示全部日历」行左侧空白 → `showAllSwitch` `false` → `true`，其余 Switch 不动 |
+| 保存提示链路 | 设置页「保存设置」→ 回主界面浮出「设置已保存」（`AppState.pendingNotice` → `onResume` 消费） |
+| 权限对话框 | 重装后首次「写入系统日历」→ `DialogBox`「需要日历权限」（左描边「只导出文件」/ 右白胶囊「去授权」），圆角与遮罩正常 |
+| 亮色模式 | 主界面 / 结果页 / 面板 全部纯黑白灰，没有彩色残留；`版本 1.0.5` 显示正确 |
+
+> 测试期间把「显示全部日历」开关来回拨过，收尾已恢复成默认关闭；设备已 `cmd uimode night no`、`svc power stayon false`，`/sdcard` 上的截图与 `ui*.xml`、本轮导出的 3 个 `.ics` 都已删除。
 
 维护须知：
 
-- 根目录交付包 `curriculum-exporter-v1.0.4-android.apk` 是**手工**从 `app/build/outputs/apk/debug/app-debug.apk` 复制的，`build-apk.ps1` 不会自动同步，改完代码记得覆盖。**上一版 `curriculum-exporter-v1.0.3-android.apk` 已删除** —— 根目录只留最新一版，避免装错。
+- 根目录交付包 `curriculum-exporter-v1.0.5-android.apk` 是**手工**从 `app/build/outputs/apk/debug/app-debug.apk` 复制的，`build-apk.ps1` 不会自动同步，改完代码记得覆盖。**上一版 `curriculum-exporter-v1.0.4-android.apk` 已删除** —— 根目录只留最新一版，避免装错。
 - 仓库：`https://github.com/Quack2026/CurriculumExporter.git`（分支 `main`），安卓版在 `android/` 子目录。提交信息含中文用 `git commit -F <文件>`。

@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 进下一页：新页从右边推进来，同时淡入，比整块突然出现顺一点 -->
 <set xmlns:android="http://schemas.android.com/apk/res/android"
     android:interpolator="@android:interpolator/decelerate_cubic">
-    <translate
-        android:duration="260"
-        android:fromYDelta="14%p"
-        android:toYDelta="0" />
     <alpha
-        android:duration="190"
+        android:duration="240"
         android:fromAlpha="0.0"
         android:toAlpha="1.0" />
+    <translate
+        android:duration="320"
+        android:fromXDelta="7%p"
+        android:toXDelta="0" />
 </set>

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- 什么都不做的过渡：用来在 startActivity 时把「退出动画」按住，避免旧页面闪一下 -->
-<set xmlns:android="http://schemas.android.com/apk/res/android">
-    <alpha
-        android:duration="280"
-        android:fromAlpha="1.0"
-        android:toAlpha="1.0" />
-</set>

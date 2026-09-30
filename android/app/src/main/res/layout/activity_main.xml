@@ -76,18 +76,49 @@
                 android:layout_marginTop="@dimen/space_l"
                 android:text="@string/btn_fetch" />
 
-            <!--
-              单击上面的按钮会按这个范围直接开始抓；长按才弹面板调整。
-              不写出来的话，用户没法知道单击会抓多少。
-            -->
-            <TextView
-                android:id="@+id/rangeText"
+            <!-- 抓取中在这里扫一条细线：比系统那个转圈更贴这个界面的直线条 -->
+            <com.quack.curriculumexporter.ProgressLine
+                android:id="@+id/fetchProgress"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="3dp"
                 android:layout_marginTop="@dimen/space_s"
-                android:gravity="center"
-                android:textColor="@color/mono_gray_hint"
-                android:textSize="@dimen/text_label" />
+                android:visibility="gone" />
+
+            <!--
+              获取范围做成一行能点的胶囊：单击上面的按钮会按这个范围直接开抓，
+              点这一行就能改（长按「获取课表」弹的还是同一个面板）。
+              原来这里只有两行灰字写着「长按可调整」，功能藏得太深了。
+            -->
+            <LinearLayout
+                android:id="@+id/rangeRow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/space_m"
+                android:background="@drawable/bg_range_row"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:minHeight="38dp"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="10dp">
+
+                <TextView
+                    android:id="@+id/rangeText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/mono_gray_text"
+                    android:textSize="@dimen/text_label" />
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginStart="4dp"
+                    android:contentDescription="@null"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_chevron_down" />
+            </LinearLayout>
 
             <!-- ===== 选项 ===== -->
             <LinearLayout
@@ -100,7 +131,8 @@
                     android:text="@string/label_option" />
 
                 <LinearLayout
-                    style="@style/SettingRow"
+                    android:id="@+id/optionRow"
+                    style="@style/SettingRow.Clickable"
                     android:layout_marginTop="@dimen/space_xs">
 
                     <LinearLayout
@@ -178,25 +210,10 @@
                 android:textSize="@dimen/text_label" />
 
             <!-- ===== 日志 ===== -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+            <TextView
+                style="@style/SectionLabel"
                 android:layout_marginTop="@dimen/space_xl"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <TextView
-                    style="@style/SectionLabel"
-                    android:text="@string/label_log" />
-
-                <ProgressBar
-                    android:id="@+id/busyBar"
-                    style="?android:attr/progressBarStyleSmall"
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:layout_marginStart="@dimen/space_s"
-                    android:visibility="gone" />
-            </LinearLayout>
+                android:text="@string/label_log" />
 
             <TextView
                 android:id="@+id/logView"

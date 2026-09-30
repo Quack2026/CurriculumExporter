@@ -2,9 +2,10 @@ package com.quack.curriculumexporter
 
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
+import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.ViewTreeObserver
-import android.view.animation.DecelerateInterpolator
+import android.view.animation.OvershootInterpolator
 import android.widget.FrameLayout
 import android.widget.TextView
 
@@ -26,12 +27,18 @@ class SegmentedControl(
     private var listener: ((Int) -> Unit)? = null
     private var lastWidth = -1
     private val argb = ArgbEvaluator()
+    private val thumbSpring = OvershootInterpolator(1.4f)
     private val activeColor = track.context.getColor(R.color.text_primary)
     private val idleColor = track.context.getColor(R.color.text_secondary)
 
     init {
         labels.forEachIndexed { index, label ->
-            label.setOnClickListener { select(index) }
+            label.setOnClickListener {
+                // 点当前这一侧是空操作：不重复渲染，也不震一下让人误会没响应
+                if (index == selected) return@setOnClickListener
+                label.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                select(index)
+            }
         }
         // 滑块宽度得等轨道量完才知道，所以挂在布局监听上；lastWidth 去重，避免反复 requestLayout
         track.viewTreeObserver.addOnGlobalLayoutListener(
@@ -77,10 +84,11 @@ class SegmentedControl(
     private fun moveThumb(index: Int, animate: Boolean) {
         val target = (index * segmentWidth()).toFloat()
         if (animate) {
+            // 带一点过冲：滑块是「弹」到位而不是滑到位，切换才有实感
             thumb.animate()
                 .translationX(target)
-                .setDuration(240)
-                .setInterpolator(DecelerateInterpolator())
+                .setDuration(280)
+                .setInterpolator(thumbSpring)
                 .start()
         } else {
             thumb.translationX = target

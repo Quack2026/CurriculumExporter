@@ -52,28 +52,22 @@
 
     <!--
       自绘圆角对话框。刻意不使用 AlertDialog 的标题/正文/按钮位，
-      内容全部由 dialog_message.xml 自己排版，这里只负责圆角底和悬浮定位。
+      内容全部由 dialog_message.xml 自己排版，这里只负责浮层窗口本身。
       只用 platform 公开 style 作 parent，不依赖平台内部 style 名。
+
+      窗口背景透明、dim 关掉：遮罩（scrim）和卡片都在 dialog_message.xml 里自己画，
+      这样开合可以跟内容一起做动画，而不是「遮罩啪一下变暗、内容才慢慢出来」。
     -->
     <style name="AppDialogTheme" parent="android:style/Theme.Material.Light.Dialog.Alert">
-        <item name="android:windowBackground">@drawable/bg_dialog</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowIsFloating">true</item>
-        <item name="android:windowMinWidthMajor">80%</item>
-        <item name="android:windowMinWidthMinor">92%</item>
-        <item name="android:backgroundDimAmount">0.45</item>
+        <item name="android:backgroundDimAmount">0</item>
         <item name="android:colorAccent">@color/accent</item>
         <item name="android:colorControlHighlight">@color/ripple</item>
         <item name="android:colorBackground">@color/app_surface</item>
         <item name="android:textColorPrimary">@color/text_primary</item>
         <item name="android:textColorSecondary">@color/text_secondary</item>
-        <item name="android:windowAnimationStyle">@style/SheetAnim</item>
-    </style>
-
-    <!-- 底部面板和对话框共用同一套进出动画 -->
-    <style name="SheetAnim">
-        <item name="android:windowEnterAnimation">@anim/sheet_in</item>
-        <item name="android:windowExitAnimation">@anim/sheet_out</item>
     </style>
 </resources>

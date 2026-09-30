@@ -2,7 +2,6 @@ package com.quack.curriculumexporter
 
 import android.app.Activity
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.view.View
 import android.view.ViewGroup
@@ -28,10 +27,12 @@ object UiTheme {
         // 顶栏（连同状态栏）刻意不跟 accent 走：暗色模式下 accent 是浅色（白胶囊 + 黑字），
         // 顶栏要是也涂成浅色，就会变成横在深色界面顶上的一条白带。它用独立的 topbar 资源，
         // 亮色近黑、暗色深灰，两边都是「深底浅字」。
+        //
+        // 底色由 bg_topbar 自己画（深色底 + 底边一条细线），这里不再覆盖它，
+        // 只把标题/图标的颜色按底色明暗调对。
         val topBarColor = activity.getColor(R.color.topbar)
         val onTopBar = onAccent(topBarColor)
         val topBar = activity.findViewById<View?>(R.id.topBar) ?: return
-        topBar.background = ColorDrawable(topBarColor)
         if (topBar is ViewGroup) for (i in 0 until topBar.childCount) {
             when (val child = topBar.getChildAt(i)) {
                 is TextView -> child.setTextColor(onTopBar)

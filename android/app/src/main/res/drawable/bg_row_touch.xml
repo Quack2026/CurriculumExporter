@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  整行可点的设置行：按下时铺一层涟漪，不画底色（它本来就在卡片里）。
+  之前设置项只有右边那个小开关能点，整行是死的 —— 手指点上去什么都没发生。
+-->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/ripple">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent" />
+            <corners android:radius="@dimen/radius_s" />
+        </shape>
+    </item>
+</ripple>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  顶栏底：深色底 + 底边一条极细的亮线。
+  顶栏和下面滚动内容原来直接相接，滚动时看不出边界；这条线补上层次，
+  而且它跟顶栏同一个 drawable，颜色永远配套（见 colors.xml 的 topbar/topbar_line）。
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/topbar" />
+        </shape>
+    </item>
+    <item
+        android:height="1dp"
+        android:gravity="bottom">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/topbar_line" />
+        </shape>
+    </item>
+</layer-list>

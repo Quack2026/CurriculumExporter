@@ -17,19 +17,24 @@
     <color name="plain_accent">#FFF4F4F6</color>
     <!-- 顶栏 / 状态栏：暗色下也是深色，跟亮色一样「深底浅字」，见 values/colors.xml 的说明。 -->
     <color name="topbar">#FF1A1A1D</color>
-    <color name="ripple">#33FFFFFF</color>
-    <color name="ripple_on_accent">#33000000</color>
+    <color name="topbar_line">#1AFFFFFF</color>
+    <color name="ripple">#3DFFFFFF</color>
+    <color name="ripple_on_accent">#3D000000</color>
 
+    <!-- 暗色下遮罩要更沉一点，否则深色界面上看不出层次 -->
+    <color name="scrim">#99000000</color>
     <color name="row_selected">#1FFFFFFF</color>
+    <!-- 暗色下轨道压到比卡片更沉、滑块提亮一档 + 一圈亮描边，滑块位置才看得出来 -->
+    <color name="segment_track">#FF1C1C1F</color>
+    <color name="segment_thumb">#FF3C3C43</color>
+    <color name="segment_thumb_line">#1FFFFFFF</color>
     <color name="handle">#FF44444A</color>
     <color name="field_bg">#FF232327</color>
     <color name="ghost_line">#FF3A3A40</color>
 
     <!-- 夜间主题也提供旧资源名，drawable/style 无需分叉。 -->
     <color name="mono_black">@color/text_primary</color>
-    <color name="mono_white">@color/app_surface</color>
     <color name="mono_gray_text">@color/text_secondary</color>
     <color name="mono_gray_hint">@color/text_hint</color>
-    <color name="mono_surface_deep">@color/app_surface_deep</color>
     <color name="mono_divider">@color/app_divider</color>
 </resources>

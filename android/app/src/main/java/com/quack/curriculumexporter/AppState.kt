@@ -17,6 +17,12 @@ object AppState {
     /** 用户在主页选的「生成军训周事件」。 */
     var includeMilitary: Boolean = true
 
+    /**
+     * 从别的页面带回来的提示（比如设置页保存成功）。
+     * 提示得显示在主界面上，所以不能在那儿直接弹 —— 那边一 finish 就没了。
+     */
+    var pendingNotice: String? = null
+
     fun clear() {
         schedule = null
         events = emptyList()

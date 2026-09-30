@@ -6,5 +6,5 @@
     -->
     <color name="accent">@android:color/system_accent1_200</color>
     <color name="on_accent">#FF0C0C0E</color>
-    <color name="ripple_on_accent">#33000000</color>
+    <color name="ripple_on_accent">#38000000</color>
 </resources>

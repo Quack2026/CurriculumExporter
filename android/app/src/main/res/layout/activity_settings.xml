@@ -64,9 +64,10 @@
                     android:layout_marginTop="@dimen/space_l"
                     android:background="@color/mono_divider" />
 
+                <!-- 每一行整行可点：点文字也能切换，不用非得戳中右边的开关 -->
                 <LinearLayout
                     android:id="@+id/calendarPickerRow"
-                    style="@style/SettingRow">
+                    style="@style/SettingRow.Clickable">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -95,7 +96,9 @@
                     android:layout_height="1dp"
                     android:background="@color/mono_divider" />
 
-                <LinearLayout style="@style/SettingRow">
+                <LinearLayout
+                    android:id="@+id/showAllRow"
+                    style="@style/SettingRow.Clickable">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -129,7 +132,9 @@
                     style="@style/SectionLabel"
                     android:text="@string/settings_confirm_section" />
 
-                <LinearLayout style="@style/SettingRow">
+                <LinearLayout
+                    android:id="@+id/confirmWriteRow"
+                    style="@style/SettingRow.Clickable">
 
                     <TextView
                         style="@style/SettingTitle"
@@ -149,7 +154,9 @@
                     android:layout_height="1dp"
                     android:background="@color/mono_divider" />
 
-                <LinearLayout style="@style/SettingRow">
+                <LinearLayout
+                    android:id="@+id/confirmReplaceRow"
+                    style="@style/SettingRow.Clickable">
 
                     <TextView
                         style="@style/SettingTitle"
@@ -174,7 +181,9 @@
                     style="@style/SectionLabel"
                     android:text="@string/settings_account_section" />
 
-                <LinearLayout style="@style/SettingRow">
+                <LinearLayout
+                    android:id="@+id/savePasswordRow"
+                    style="@style/SettingRow.Clickable">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -208,7 +217,9 @@
                     style="@style/SectionLabel"
                     android:text="@string/settings_theme_section" />
 
-                <LinearLayout style="@style/SettingRow">
+                <LinearLayout
+                    android:id="@+id/dynamicThemeRow"
+                    style="@style/SettingRow.Clickable">
 
                     <LinearLayout
                         android:layout_width="0dp"

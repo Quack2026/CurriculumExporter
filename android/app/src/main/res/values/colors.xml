@@ -24,20 +24,26 @@
       深色界面顶上的一条白带；所以顶栏另有自己的明暗：亮色近黑、暗色深灰。
     -->
     <color name="topbar">#FF111113</color>
-    <color name="ripple">#1A000000</color>
-    <color name="ripple_on_accent">#33FFFFFF</color>
+    <!-- 顶栏底下那条极细的分隔线：让顶栏和滚动内容之间有一道边界 -->
+    <color name="topbar_line">#1FFFFFFF</color>
+    <color name="ripple">#26000000</color>
+    <color name="ripple_on_accent">#38FFFFFF</color>
 
     <!-- 浮层（底部面板 / 圆角对话框）内部用色 -->
+    <!-- 浮层背后的遮罩：自己画一层，好让它跟面板一起淡入淡出，而不是瞬间变暗 -->
+    <color name="scrim">#66000000</color>
     <color name="row_selected">#0F000000</color>
+    <!-- 分段控件：浅灰轨道 + 白滑块。暗色下靠这三档明度拉开，滑块才看得出在哪 -->
+    <color name="segment_track">#FFE6E6EA</color>
+    <color name="segment_thumb">#FFFFFFFF</color>
+    <color name="segment_thumb_line">#14000000</color>
     <color name="handle">#FFD2D2D8</color>
     <color name="field_bg">#FFF4F4F6</color>
     <color name="ghost_line">#FFD8D8DE</color>
 
     <!-- 旧资源名保留为兼容别名，所有 drawable/style 会随主题自动切换。 -->
     <color name="mono_black">@color/text_primary</color>
-    <color name="mono_white">@color/app_surface</color>
     <color name="mono_gray_text">@color/text_secondary</color>
     <color name="mono_gray_hint">@color/text_hint</color>
-    <color name="mono_surface_deep">@color/app_surface_deep</color>
     <color name="mono_divider">@color/app_divider</color>
 </resources>
