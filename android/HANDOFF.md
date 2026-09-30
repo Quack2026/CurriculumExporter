@@ -3,7 +3,7 @@
 > 更新时间：2026-09-30 深夜（**v1.0.0**，versionCode 1）
 > 读这份文档的人默认要**继续改这个项目**；下游的「用户使用说明」在 `README.md`。
 >
-> **版本号说明**：安卓版从这个提交起正式定为 **1.0.0 / versionCode 1**（首个正式发布，已打 tag `v1.0.0`）。
+> **版本号说明**：安卓版从这个提交起正式定为 **1.0.0 / versionCode 1**（首个正式发布，tag 名 **`android-v1.0.0`** —— 远端早先那个 `v1.0.0` 指向 Windows 版的旧提交，别混）。
 > 开发期间用过的 **1.0.1 ~ 1.0.5（versionCode 2~6）编号作废** —— 后面 5.x 各节标题里保留的那些版本号只是当时的历史记录，
 > 别拿它们跟正式版号对照。**注意 versionCode 从 6 降回了 1**：手机上装过开发包的，系统会拒绝覆盖安装（Android 不允许降级），
 > 必须先卸载再装，而卸载会连带清掉 prefs 和 Keystore 里的密码，得重新填一次账号。
@@ -14,7 +14,7 @@
 |---|---|
 | 源码 | `C:\Tools\CurriculumExporter\android`（仓库 `Quack2026/CurriculumExporter` 的 `android/` 子目录，分支 `main`；旧路径 `C:\Tools\CurriculumExporter-Android` 只是个 junction） |
 | 包名 | `com.quack.curriculumexporter` |
-| 版本 | versionCode **1** / versionName **1.0.0**（首个正式发布，tag `v1.0.0`） |
+| 版本 | versionCode **1** / versionName **1.0.0**（首个正式发布，tag `android-v1.0.0`） |
 | SDK | minSdk 26 · targetSdk 35 · compileSdk 35 · buildTools **35.0.0**（钉住，避免去下损坏的 34.0.0） |
 | 技术栈 | Kotlin + XML，**0 个第三方运行时依赖**（仅测试用 junit 4.13.2 + org.json:json:20240303） |
 | Windows 原版参考 | `C:\Tools\CurriculumExporter`（C#/.NET 4.8，`src/Network.cs` 是接口与加密的权威实现，**只读参考**；和安卓版同属一个仓库，仓库根就是它） |
