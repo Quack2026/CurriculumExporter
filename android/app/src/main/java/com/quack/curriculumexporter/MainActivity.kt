@@ -1,15 +1,14 @@
 package com.quack.curriculumexporter
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -27,7 +26,8 @@ class MainActivity : Activity() {
 
     private lateinit var userInput: EditText
     private lateinit var passInput: EditText
-    private lateinit var fetchBtn: Button
+    private lateinit var fetchBtn: TextView
+    private lateinit var rangeText: TextView
     private lateinit var militarySwitch: Switch
     private lateinit var logView: TextView
     private lateinit var mainScroll: ScrollView
@@ -50,6 +50,12 @@ class MainActivity : Activity() {
     /** 抓取结束时 App 不在前台 → 先记下来，回到前台再跳（Android 10+ 不许后台起 Activity）。 */
     private var pendingPreview = false
 
+    /** 上一次见到的系统深浅色，用来判断 uiMode 是不是真的变了。 */
+    private var nightMode = Configuration.UI_MODE_NIGHT_NO
+
+    /** 抓取途中碰上了深浅色切换 → 记下来，等抓完再重建，别把半截结果丢掉。 */
+    private var pendingThemeRecreate = false
+
     private val prefs by lazy {
         getSharedPreferences(PREFS, MODE_PRIVATE)
     }
@@ -57,12 +63,14 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         UiTheme.applyConfiguredTheme(this)
+        nightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         setContentView(R.layout.activity_main)
         SystemBars.install(this, findViewById(android.R.id.content), findViewById(R.id.topBar))
 
         userInput = findViewById(R.id.userInput)
         passInput = findViewById(R.id.passInput)
         fetchBtn = findViewById(R.id.fetchBtn)
+        rangeText = findViewById(R.id.rangeText)
         militarySwitch = findViewById(R.id.militarySwitch)
         logView = findViewById(R.id.logView)
         mainScroll = findViewById(R.id.mainScroll)
@@ -88,13 +96,16 @@ class MainActivity : Activity() {
         Anim.press(settingsBtn)
         findViewById<TextView>(R.id.versionText).text =
             getString(R.string.version_label, AppInfo.versionName(this))
-        fetchBtn.setOnClickListener { if (running) requestCancel() else startFetch() }
-        // 长按给一个「只抓近几周」的快捷入口：整学期 20 个请求要十秒上下，日常更新用不着那么久
+
+        // 单击按上次选定的范围直接开抓；想换范围就长按弹面板（面板里先选、再按「完成」）
+        fetchBtn.setOnClickListener { if (running) requestCancel() else startFetchWithSavedRange() }
         fetchBtn.setOnLongClickListener {
             if (!running) showRangeMenu()
             // 抓取中按钮是「取消获取」，长按不弹菜单；无论如何都消费掉这次长按
             true
         }
+        updateRangeLabel()
+
         bannerClose.setOnClickListener { Anim.hideBar(banner) }
         // 开始输入就把提示条收起来，别挡着人看输入框。
         // 刻意用「点击」而不是 onFocusChange：对话框一关，输入框会「重新获得焦点」，
@@ -110,9 +121,29 @@ class MainActivity : Activity() {
         showLastCrashIfAny()
     }
 
+    /**
+     * 系统切深色 / 浅色。
+     *
+     * uiMode 写在 configChanges 里（为了旋转屏幕、弹键盘时不重建页面），代价是系统不会
+     * 再替我们重建 Activity，values-night 那套颜色也就不会换过来 —— 表现出来就是「切了
+     * 深色，界面几乎没变」。所以这里自己判断：确认真的变了就重建一次。
+     * 抓取中重建会丢掉半截结果，那种情况先记下来，等收尾时再补。
+     */
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val night = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        if (night == nightMode) return
+        nightMode = night
+        if (running) pendingThemeRecreate = true else recreate()
+    }
+
     override fun onResume() {
         super.onResume()
-        if (::fetchBtn.isInitialized) UiTheme.apply(this)
+        if (::fetchBtn.isInitialized) {
+            UiTheme.apply(this)
+            // 周次会随时间往前跑，回到前台重新算一遍按钮下面写着的范围
+            updateRangeLabel()
+        }
         if (pendingPreview) {
             pendingPreview = false
             openResult()
@@ -199,7 +230,7 @@ class MainActivity : Activity() {
                     shouldStop = { cancelRequested },
                 )
 
-                // 记下校历起点：下次长按「获取课表」就能只抓近几周，几秒完事
+                // 记下校历起点：下次按范围获取就能算出「现在第几周」，几秒完事
                 TermWeeks.remember(this, schedule)
 
                 val events = IcsBuilder.events(
@@ -228,30 +259,51 @@ class MainActivity : Activity() {
 
     // ------------------------------------------------------------ 获取范围
 
+    /** 上次在长按面板里选的档位；下标对应 TermWeeks.ranges() 的固定顺序。 */
+    private fun savedRangeIndex(): Int {
+        val ranges = TermWeeks.ranges(TermWeeks.today(this))
+        return SettingsStore.fetchRange(this).coerceIn(0, ranges.size - 1)
+    }
+
     /**
-     * 长按「获取课表」弹出的范围菜单。
+     * 单击「获取课表」：直接按上次选定的范围开抓。
      *
-     * 用自定义视图而不是 `AlertDialog.setItems()`：平台 Material 主题下那份列表不渲染
-     * （和选日历对话框同一个坑）。
+     * 选定的是「近 N 周」这类要靠周次才算得出的档位，而校历起点还没拿到时，
+     * 退成全面获取并说明原因 —— 总比默默抓错范围强。
+     */
+    private fun startFetchWithSavedRange() {
+        val range = TermWeeks.ranges(TermWeeks.today(this))[savedRangeIndex()]
+        if (range.needsFullFetch) {
+            val note = getString(R.string.range_fallback_full)
+            appendLog(note)
+            showBanner(getString(R.string.banner_notice_title), note)
+            startFetch(1, EduClient.DEFAULT_MAX_WEEK)
+            return
+        }
+        startFetch(range.minWeek, range.maxWeek)
+    }
+
+    /** 把「单击会抓多少」写在按钮下面，否则用户没法知道按下去会发生什么。 */
+    private fun updateRangeLabel() {
+        val range = TermWeeks.ranges(TermWeeks.today(this))[savedRangeIndex()]
+        rangeText.text = if (range.needsFullFetch) {
+            getString(R.string.range_fallback_full)
+        } else {
+            getString(R.string.range_label, range.minWeek, range.maxWeek) +
+                "\n" + getString(R.string.range_edit_hint)
+        }
+    }
+
+    /**
+     * 长按「获取课表」弹出的范围面板。
+     *
+     * 点一行只是把右边的圆形涂满，不会立刻开抓；按最下面的「完成」也只是把选中的档位
+     * 记成默认值，真正开始获取仍然是按下面那颗「获取课表」——「设定范围」和「开跑」
+     * 分成两步，免得选完就再也退不回去。
      */
     private fun showRangeMenu() {
         val current = TermWeeks.today(this)
-        val content = layoutInflater.inflate(R.layout.dialog_fetch_range, null)
-
-        val hint = content.findViewById<TextView>(R.id.rangeHint)
-        hint.text = if (current > 0) {
-            getString(R.string.range_hint_known, current)
-        } else {
-            getString(R.string.range_hint_unknown)
-        }
-
-        val dialog = AlertDialog.Builder(this)
-            .setTitle(R.string.range_title)
-            .setView(content)
-            .setNegativeButton(R.string.dlg_cancel, null)
-            .create()
-
-        val list = content.findViewById<LinearLayout>(R.id.rangeList)
+        val ranges = TermWeeks.ranges(current)
         // 文案顺序与 TermWeeks.ranges() 的返回顺序一一对应
         val texts = listOf(
             R.string.range_full_retry to R.string.range_full_retry_hint,
@@ -259,26 +311,36 @@ class MainActivity : Activity() {
             R.string.range_5 to R.string.range_5_hint,
             R.string.range_3 to R.string.range_3_hint,
         )
-        texts.zip(TermWeeks.ranges(current)).forEach { (text, range) ->
-            val (label, desc) = text
-            val row = layoutInflater.inflate(R.layout.item_fetch_range, list, false)
-            row.findViewById<TextView>(R.id.rangeLabel).text = getString(label)
-            row.findViewById<TextView>(R.id.rangeDesc).text = getString(desc)
-            row.setOnClickListener {
-                dialog.dismiss()
-                if (range.needsFullFetch) {
-                    // 还不知道今天第几周：给个明确的下一步，而不是默默抓错范围
-                    val note = getString(R.string.range_need_full)
-                    appendLog(note)
-                    showBanner(getString(R.string.banner_notice_title), note)
-                    return@setOnClickListener
-                }
-                startFetch(range.minWeek, range.maxWeek)
-            }
-            list.addView(row)
+        val items = ranges.mapIndexed { index, range ->
+            val (label, desc) = texts[index]
+            Sheet.Item(
+                title = getString(label),
+                desc = getString(desc),
+                // 周次还不知道时后三档算不出来，直接禁用，比点了只弹一句提示更清楚
+                enabled = !range.needsFullFetch,
+            )
         }
 
-        dialog.show()
+        val saved = savedRangeIndex()
+        val checked = if (items[saved].enabled) saved else 0
+
+        Sheet.show(
+            activity = this,
+            title = getString(R.string.range_title),
+            hint = if (current > 0) {
+                getString(R.string.range_hint_known, current)
+            } else {
+                getString(R.string.range_hint_unknown)
+            },
+            items = items,
+            checked = checked,
+            doneText = getString(R.string.dlg_done),
+            disabledHint = getString(R.string.range_need_full),
+        ) { index ->
+            // 只落默认范围，不在这里开抓：想抓的时候按下面的「获取课表」就好。
+            SettingsStore.setFetchRange(this, index)
+            updateRangeLabel()
+        }
     }
 
     private fun onFetched(schedule: Schedule, events: List<IcsEvent>, withMilitary: Boolean) {
@@ -316,6 +378,11 @@ class MainActivity : Activity() {
         fetchBtn.text = getString(R.string.btn_fetch)
         busyBar.visibility = View.GONE
         setInputsEnabled(true)
+        // 抓取途中系统切过深浅色：现在没有正在跑的任务了，补上那次重建
+        if (pendingThemeRecreate) {
+            pendingThemeRecreate = false
+            recreate()
+        }
     }
 
     private fun openResult() {
@@ -355,23 +422,31 @@ class MainActivity : Activity() {
             setTextIsSelectable(true)
             typeface = Typeface.MONOSPACE
             textSize = 11f
-            setTextColor(getColor(R.color.mono_black))
+            setTextColor(getColor(R.color.mono_gray_text))
             val pad = (12 * resources.displayMetrics.density).toInt()
             setPadding(pad, pad, pad, pad)
         }
+        // 堆栈可能很长，给它一个固定上限，别把对话框撑出屏幕
+        val scroller = ScrollView(this).apply {
+            addView(detail)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                (resources.displayMetrics.heightPixels * 0.36f).toInt()
+            )
+        }
 
-        AlertDialog.Builder(this)
-            .setTitle(R.string.crash_title)
-            .setMessage(R.string.crash_message)
-            .setView(ScrollView(this).apply { addView(detail) })
-            .setPositiveButton(android.R.string.ok, null)
-            .setNeutralButton(R.string.crash_copy) { _, _ ->
-                val cm = getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager
-                    ?: return@setNeutralButton
-                cm.setPrimaryClip(ClipData.newPlainText("crash", trace))
-                Toast.makeText(this, R.string.crash_copied, Toast.LENGTH_SHORT).show()
-            }
-            .show()
+        DialogBox.show(
+            activity = this,
+            title = getString(R.string.crash_title),
+            message = getString(R.string.crash_message),
+            body = scroller,
+            positive = getString(R.string.crash_copy),
+            negative = getString(R.string.dlg_close),
+        ) {
+            val cm = getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager ?: return@show
+            cm.setPrimaryClip(ClipData.newPlainText("crash", trace))
+            Toast.makeText(this, R.string.crash_copied, Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun showBanner(title: String, text: String) {

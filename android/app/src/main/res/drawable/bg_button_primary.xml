@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  实心胶囊按钮。颜色取当前主题的 colorAccent：
+  AppTheme 下是 accent（Android 12+ 可跟随系统动态色），AppThemePlain 下是固定黑白。
+-->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="@color/mono_ripple_light">
+    android:color="@color/ripple_on_accent">
     <item>
         <selector>
             <item android:state_enabled="false">
                 <shape android:shape="rectangle">
-                    <solid android:color="@color/mono_surface_deep" />
-                    <corners android:radius="@dimen/radius_m" />
+                    <solid android:color="@color/app_surface_deep" />
+                    <corners android:radius="@dimen/radius_pill" />
                 </shape>
             </item>
             <item>
                 <shape android:shape="rectangle">
-                    <solid android:color="@color/mono_black" />
-                    <corners android:radius="@dimen/radius_m" />
+                    <solid android:color="?android:attr/colorAccent" />
+                    <corners android:radius="@dimen/radius_pill" />
                 </shape>
             </item>
         </selector>

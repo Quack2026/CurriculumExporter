@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 卡片外观 + 点击水波纹，用于整行可点的设置入口。 -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
     android:color="@color/ripple">
     <item android:drawable="@drawable/bg_card" />

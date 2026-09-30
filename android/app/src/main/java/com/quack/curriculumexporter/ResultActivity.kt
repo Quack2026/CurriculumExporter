@@ -2,16 +2,14 @@ package com.quack.curriculumexporter
 
 import android.Manifest
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
@@ -27,9 +25,9 @@ class ResultActivity : Activity() {
     private lateinit var infoStats: TextView
     private lateinit var previewText: TextView
     private lateinit var resultScroll: ScrollView
-    private lateinit var writeBtn: Button
-    private lateinit var exportBtn: Button
-    private lateinit var shareBtn: Button
+    private lateinit var writeBtn: TextView
+    private lateinit var exportBtn: TextView
+    private lateinit var shareBtn: TextView
     private lateinit var segmented: SegmentedControl
 
     private lateinit var schedule: Schedule
@@ -40,9 +38,22 @@ class ResultActivity : Activity() {
     /** 走存储权限时用户点的是「保存」还是「保存并分享」，授权回来后接着做完。 */
     private var pendingShareAfterGrant = false
 
+    /** 上一次见到的系统深浅色，用来判断 uiMode 是不是真的变了。 */
+    private var nightMode = Configuration.UI_MODE_NIGHT_NO
+
+    /** 同 MainActivity：uiMode 被 configChanges 拦住了，系统不会重建，深浅色得自己换一次。 */
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val night = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        if (night == nightMode) return
+        nightMode = night
+        recreate()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         UiTheme.applyConfiguredTheme(this)
+        nightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
 
         val current = AppState.schedule
         if (current == null) {
@@ -165,9 +176,9 @@ class ResultActivity : Activity() {
         // 少这一个淡入，看不出差别。
         Anim.stagger(
             listOf(
-                findViewById(R.id.infoArea),
-                findViewById(R.id.segMode),
-                findViewById(R.id.actionArea),
+                findViewById<View>(R.id.infoArea),
+                findViewById<View>(R.id.segMode),
+                findViewById<View>(R.id.actionArea),
             )
         )
     }
@@ -180,15 +191,17 @@ class ResultActivity : Activity() {
             return
         }
         if (!CalendarWriter.hasPermission(this)) {
-            AlertDialog.Builder(this)
-                .setTitle(R.string.perm_calendar_title)
-                .setMessage(R.string.perm_calendar_message)
-                .setPositiveButton(R.string.perm_calendar_ok) { _, _ ->
-                    @Suppress("DEPRECATION")
-                    requestPermissions(CalendarWriter.PERMISSIONS, REQ_CALENDAR)
-                }
-                .setNegativeButton(R.string.perm_calendar_no) { _, _ -> saveIcs(shareAfter = false) }
-                .show()
+            DialogBox.show(
+                activity = this,
+                title = getString(R.string.perm_calendar_title),
+                message = getString(R.string.perm_calendar_message),
+                positive = getString(R.string.perm_calendar_ok),
+                negative = getString(R.string.perm_calendar_no),
+                onNegative = { saveIcs(shareAfter = false) },
+            ) {
+                @Suppress("DEPRECATION")
+                requestPermissions(CalendarWriter.PERMISSIONS, REQ_CALENDAR)
+            }
             return
         }
         if (SettingsStore.useCalendarPicker(this)) chooseCalendar()
@@ -226,14 +239,13 @@ class ResultActivity : Activity() {
         }
 
         if (calendars.isEmpty()) {
-            AlertDialog.Builder(this)
-                .setTitle(R.string.dlg_calendar_title)
-                .setMessage(R.string.dlg_no_calendar)
-                .setPositiveButton(R.string.dlg_create_calendar) { _, _ ->
-                    createAndWriteCalendar(writer)
-                }
-                .setNegativeButton(R.string.dlg_cancel, null)
-                .show()
+            DialogBox.show(
+                activity = this,
+                title = getString(R.string.dlg_calendar_title),
+                message = getString(R.string.dlg_no_calendar),
+                positive = getString(R.string.dlg_create_calendar),
+                negative = getString(R.string.dlg_cancel),
+            ) { createAndWriteCalendar(writer) }
             return
         }
 
@@ -241,51 +253,30 @@ class ResultActivity : Activity() {
     }
 
     /**
-     * 日历列表自己渲染，不走 `AlertDialog.setItems()`。
+     * 日历列表用同一套底部面板：左边日历名，右边圆形选择点，选完按「完成」才写。
      *
-     * 平台 Material 主题下 `setItems()` 那份列表在真机上根本不渲染：对话框只剩标题、提示和两个按钮，
-     * 用户一个日历都看不到也没得选，「启用系统日历选择」这个设置等于白开。
-     * 换成 `setView` + 逐行 `addView` 之后就正常了。
+     * 刻意不走 `AlertDialog.setItems()`：平台 Material 主题下那份列表在真机上根本不渲染，
+     * 对话框只剩标题和两个按钮，用户一个日历都看不到也没得选，
+     * 「启用系统日历选择」这个设置等于白开。
      */
     private fun showCalendarPicker(
         writer: CalendarWriter,
         calendars: List<CalendarAccount>,
         showAll: Boolean,
     ) {
-        val content = layoutInflater.inflate(R.layout.dialog_calendar_picker, null)
-        content.findViewById<TextView>(R.id.pickerHint).text = getString(
-            if (showAll) R.string.dlg_calendar_hint_all else R.string.dlg_calendar_hint
-        )
-
-        val dialog = AlertDialog.Builder(this)
-            .setTitle(R.string.dlg_calendar_title)
-            .setView(content)
-            .setPositiveButton(R.string.dlg_create_calendar) { _, _ ->
-                createAndWriteCalendar(writer)
-            }
-            .setNegativeButton(R.string.dlg_cancel, null)
-            .create()
-
-        val list = content.findViewById<LinearLayout>(R.id.pickerList)
-        calendars.forEach { calendar ->
-            val row = layoutInflater.inflate(R.layout.item_calendar_choice, list, false) as TextView
-            row.text = calendar.label()
-            row.setOnClickListener {
-                dialog.dismiss()
-                confirmAndWrite(writer, calendar)
-            }
-            list.addView(row)
-        }
-
-        dialog.show()
-
-        // 开了「显示全部日历」时列表可能很长：超过半屏就让它自己滚，别把对话框撑出屏幕。
-        val scroll = content.findViewById<ScrollView>(R.id.pickerScroll)
-        scroll.post {
-            val limit = (resources.displayMetrics.heightPixels * 0.45f).toInt()
-            if (scroll.height > limit) {
-                scroll.layoutParams = scroll.layoutParams.apply { height = limit }
-            }
+        Sheet.show(
+            activity = this,
+            title = getString(R.string.dlg_calendar_title),
+            hint = getString(
+                if (showAll) R.string.dlg_calendar_hint_all else R.string.dlg_calendar_hint
+            ),
+            items = calendars.map { Sheet.Item(title = it.label()) },
+            checked = 0,
+            doneText = getString(R.string.dlg_done),
+            secondaryText = getString(R.string.dlg_create_calendar),
+            onSecondary = { createAndWriteCalendar(writer) },
+        ) { index ->
+            confirmAndWrite(writer, calendars[index])
         }
     }
 
@@ -303,11 +294,7 @@ class ResultActivity : Activity() {
             } catch (e: Exception) {
                 runOnUiThread {
                     setActionsEnabled(true)
-                    AlertDialog.Builder(this)
-                        .setTitle(R.string.banner_fail_title)
-                        .setMessage("创建课表日历失败：${e.message ?: e.javaClass.simpleName}")
-                        .setPositiveButton(android.R.string.ok, null)
-                        .show()
+                    showCalendarError("创建课表日历失败：${e.message ?: e.javaClass.simpleName}")
                 }
             }
         }.start()
@@ -328,20 +315,26 @@ class ResultActivity : Activity() {
             return
         }
         if (!update) {
-            AlertDialog.Builder(this)
-                .setTitle(R.string.dlg_write_confirm_title)
-                .setMessage(getString(R.string.dlg_write_confirm_message, calendar.label()))
-                .setPositiveButton(R.string.dlg_write_confirm_ok) { _, _ -> write() }
-                .setNegativeButton(R.string.dlg_cancel, null)
-                .show()
+            DialogBox.show(
+                activity = this,
+                title = getString(R.string.dlg_write_confirm_title),
+                message = getString(R.string.dlg_write_confirm_message, calendar.label()),
+                positive = getString(R.string.dlg_write_confirm_ok),
+                negative = getString(R.string.dlg_cancel),
+            ) { write() }
             return
         }
-        AlertDialog.Builder(this)
-            .setTitle(R.string.dlg_dup_title)
-            .setMessage(getString(R.string.dlg_dup_message, record.calendarName, record.events.size))
-            .setPositiveButton(R.string.dlg_dup_delete) { _, _ -> write() }
-            .setNegativeButton(R.string.dlg_cancel, null)
-            .show()
+        DialogBox.show(
+            activity = this,
+            title = getString(R.string.dlg_dup_title),
+            message = getString(
+                R.string.dlg_dup_message,
+                record?.calendarName.orEmpty(),
+                record?.events?.size ?: 0,
+            ),
+            positive = getString(R.string.dlg_dup_delete),
+            negative = getString(R.string.dlg_cancel),
+        ) { write() }
     }
 
     /**
@@ -384,11 +377,7 @@ class ResultActivity : Activity() {
                 }
             } catch (e: Exception) {
                 runOnUiThread {
-                    AlertDialog.Builder(this)
-                        .setTitle(R.string.banner_fail_title)
-                        .setMessage("写日历失败：${e.message ?: e.javaClass.simpleName}")
-                        .setPositiveButton(android.R.string.ok, null)
-                        .show()
+                    showCalendarError("写日历失败：${e.message ?: e.javaClass.simpleName}")
                 }
             } finally {
                 runOnUiThread { setSyncing(false) }
@@ -467,22 +456,19 @@ class ResultActivity : Activity() {
             } catch (e: Exception) {
                 runOnUiThread {
                     setActionsEnabled(true)
-                    AlertDialog.Builder(this)
-                        .setTitle(R.string.banner_fail_title)
-                        .setMessage("保存失败：${e.message ?: e.javaClass.simpleName}")
-                        .setPositiveButton(android.R.string.ok, null)
-                        .show()
+                    showCalendarError("保存失败：${e.message ?: e.javaClass.simpleName}")
                 }
             }
         }.start()
     }
 
     private fun showCalendarError(message: String) {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.banner_fail_title)
-            .setMessage(message)
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
+        DialogBox.show(
+            activity = this,
+            title = getString(R.string.banner_fail_title),
+            message = message,
+            positive = getString(R.string.dlg_ok),
+        )
     }
 
     private fun share(name: String, uri: Uri) {

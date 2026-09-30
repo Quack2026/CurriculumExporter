@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 浮层里的一行选项：左边文字，右边圆形选择点。范围菜单和日历选择共用。 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/ChoiceRow">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/choiceTitle"
+            style="@style/ChoiceTitle"
+            tools:text="近 5 周" />
+
+        <TextView
+            android:id="@+id/choiceDesc"
+            style="@style/ChoiceDesc"
+            android:visibility="gone"
+            tools:text="只抓本周往后 5 周，最快"
+            tools:visibility="visible" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/choiceDot"
+        style="@style/ChoiceDot"
+        android:importantForAccessibility="no" />
+</LinearLayout>

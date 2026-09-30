@@ -17,22 +17,17 @@ object SystemBars {
 
         val window = activity.window
         window.setDecorFitsSystemWindows(false)
-        window.statusBarColor = activity.getColor(R.color.accent)
+        window.statusBarColor = activity.getColor(R.color.topbar)
         window.navigationBarColor = activity.getColor(R.color.app_background)
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
 
         val dark = (activity.resources.configuration.uiMode and
             android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
             android.content.res.Configuration.UI_MODE_NIGHT_YES
-        val flags: Int
-        if (dark) {
-            // 暗色主题的状态栏是浅色 accent，需要深色状态栏图标；导航栏保持深色图标。
-            flags = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        } else {
-            // 亮色主题的状态栏是深色 accent，导航栏是浅色背景，需要深色导航栏图标。
-            flags = View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-        }
-        window.decorView.systemUiVisibility = flags
+        // 顶栏 / 状态栏始终是深色，系统图标要用浅色；导航栏跟着页面背景走 ——
+        // 亮色页面是浅底，才需要深色图标。
+        window.decorView.systemUiVisibility =
+            if (dark) 0 else View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
 
         val topHeight = activity.resources.getDimensionPixelSize(R.dimen.topbar_height)
         val topLeft = topBar.paddingLeft

@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/mono_white"
+    android:background="@color/app_background"
     android:orientation="vertical">
 
     <!-- 自绘顶栏：系统 ActionBar 会盖住上面的输入区，还会挡长按粘贴菜单 -->
@@ -23,7 +23,8 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:fillViewport="true"
-        android:paddingBottom="@dimen/space_xl">
+        android:paddingBottom="@dimen/space_xl"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -34,11 +35,7 @@
             <!-- ===== 账号 ===== -->
             <LinearLayout
                 android:id="@+id/cardInput"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_card"
-                android:orientation="vertical"
-                android:padding="@dimen/space_l">
+                style="@style/Card">
 
                 <TextView
                     style="@style/SectionLabel"
@@ -55,7 +52,7 @@
 
                 <TextView
                     style="@style/SectionLabel"
-                    android:layout_marginTop="@dimen/space_m"
+                    android:layout_marginTop="@dimen/space_l"
                     android:text="@string/label_pass" />
 
                 <EditText
@@ -73,21 +70,30 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/space_m" />
 
-            <Button
+            <TextView
                 android:id="@+id/fetchBtn"
                 style="@style/ButtonPrimary"
                 android:layout_marginTop="@dimen/space_l"
                 android:text="@string/btn_fetch" />
 
+            <!--
+              单击上面的按钮会按这个范围直接开始抓；长按才弹面板调整。
+              不写出来的话，用户没法知道单击会抓多少。
+            -->
+            <TextView
+                android:id="@+id/rangeText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_s"
+                android:gravity="center"
+                android:textColor="@color/mono_gray_hint"
+                android:textSize="@dimen/text_label" />
+
             <!-- ===== 选项 ===== -->
             <LinearLayout
                 android:id="@+id/cardOption"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_l"
-                android:background="@drawable/bg_card"
-                android:orientation="vertical"
-                android:padding="@dimen/space_l">
+                style="@style/Card"
+                android:layout_marginTop="@dimen/space_m">
 
                 <TextView
                     style="@style/SectionLabel"
@@ -95,7 +101,7 @@
 
                 <LinearLayout
                     style="@style/SettingRow"
-                    android:layout_marginTop="@dimen/space_s">
+                    android:layout_marginTop="@dimen/space_xs">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -104,20 +110,12 @@
                         android:orientation="vertical">
 
                         <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/opt_military"
-                            android:textColor="@color/mono_black"
-                            android:textSize="@dimen/text_body" />
+                            style="@style/SettingTitle"
+                            android:text="@string/opt_military" />
 
                         <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:lineSpacingExtra="2dp"
-                            android:text="@string/opt_military_hint"
-                            android:textColor="@color/mono_gray_text"
-                            android:textSize="@dimen/text_label" />
+                            style="@style/SettingHint"
+                            android:text="@string/opt_military_hint" />
                     </LinearLayout>
 
                     <Switch
@@ -142,18 +140,16 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center_vertical"
-                android:minHeight="56dp"
+                android:minHeight="@dimen/row_min_height"
                 android:orientation="horizontal"
                 android:paddingStart="@dimen/space_l"
                 android:paddingEnd="@dimen/space_l">
 
                 <TextView
+                    style="@style/SettingTitle"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/settings_entry"
-                    android:textColor="@color/mono_black"
-                    android:textSize="@dimen/text_body" />
+                    android:text="@string/settings_entry" />
 
                 <ImageView
                     android:layout_width="20dp"
@@ -167,8 +163,8 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_m"
-                android:lineSpacingExtra="2dp"
+                android:layout_marginTop="@dimen/space_l"
+                android:lineSpacingExtra="3dp"
                 android:text="@string/privacy_note"
                 android:textColor="@color/mono_gray_hint"
                 android:textSize="@dimen/text_label" />
@@ -208,8 +204,7 @@
                 android:layout_marginTop="@dimen/space_s"
                 android:background="@drawable/bg_card"
                 android:padding="@dimen/space_m"
-                android:text="@string/log_idle"
-                android:textIsSelectable="true" />
+                android:text="@string/log_idle" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

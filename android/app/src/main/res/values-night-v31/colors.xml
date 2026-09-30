@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      night + Android 12+：values-night 会盖掉 values-v31，所以动态主题色要在
+      这个组合目录里单独给一次，否则「跟随系统动态色」在暗色模式下等于没开。
+    -->
+    <color name="accent">@android:color/system_accent1_200</color>
+    <color name="on_accent">#FF0C0C0E</color>
+    <color name="ripple_on_accent">#33000000</color>
+</resources>

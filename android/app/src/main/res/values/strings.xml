@@ -19,7 +19,7 @@
 
     <!-- 获取范围（长按「获取课表」） -->
     <string name="range_title">选择获取范围</string>
-    <string name="range_hint_known">现在是第 %1$d 周。范围越窄越快（只抓本周往后的课，一周一个请求，不并发）。</string>
+    <string name="range_hint_known">现在是第 %1$d 周。范围越窄越快：只抓本周往后的课，一周一个请求，不并发。</string>
     <string name="range_hint_unknown">还没获取过课表。先跑一次「全面重新获取」，本应用才知道现在第几周，之后就能按周快速获取。</string>
     <string name="range_full_retry">全面重新获取</string>
     <string name="range_full_retry_hint">第 1~20 周全部重抓，包含已经上过的课。最慢</string>
@@ -30,6 +30,9 @@
     <string name="range_3">近 3 周</string>
     <string name="range_3_hint">本周 + 之后 2 周。最快</string>
     <string name="range_need_full">先获取一次课表，本应用才知道现在第几周</string>
+    <string name="range_label">本次获取：第 %1$d ~ %2$d 周</string>
+    <string name="range_edit_hint">长按「获取课表」可调整范围</string>
+    <string name="range_fallback_full">还不知道现在第几周，这次先全面获取（第 1~20 周）</string>
 
     <!-- 结果界面 -->
     <string name="result_title">课表预览</string>
@@ -55,6 +58,9 @@
     <string name="dlg_dup_message">上次往「%1$s」导入过 %2$d 个事件。\n\n先删掉它们再导入，可以避免课表重复。</string>
     <string name="dlg_dup_delete">先删旧的</string>
     <string name="dlg_cancel">取消</string>
+    <string name="dlg_done">完成</string>
+    <string name="dlg_close">关闭</string>
+    <string name="dlg_ok">知道了</string>
 
     <!-- 提示条 -->
     <string name="banner_notice_title">提示</string>
@@ -87,6 +93,7 @@
     <string name="settings_save_password_hint">密码使用 Android Keystore 加密保存，不保存明文。</string>
     <string name="settings_theme_section">外观</string>
     <string name="settings_dynamic_theme">跟随系统主题色</string>
+    <string name="settings_dynamic_theme_hint">Android 12+ 用系统主题色做强调色；关掉就固定黑白。</string>
     <string name="settings_save">保存设置</string>
     <string name="settings_saved">设置已保存</string>
     <string name="settings_calendar_name_required">请填写日历名称</string>

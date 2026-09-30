@@ -1,9 +1,12 @@
 package com.quack.curriculumexporter
 
 import android.app.Activity
+import android.content.res.Configuration
 import android.os.Bundle
+import android.view.View
 import android.widget.EditText
 import android.widget.Switch
+import android.widget.TextView
 import android.widget.Toast
 
 class SettingsActivity : Activity() {
@@ -15,9 +18,22 @@ class SettingsActivity : Activity() {
     private lateinit var savePassword: Switch
     private lateinit var dynamicTheme: Switch
 
+    /** 上一次见到的系统深浅色，用来判断 uiMode 是不是真的变了。 */
+    private var nightMode = Configuration.UI_MODE_NIGHT_NO
+
+    /** 同 MainActivity：uiMode 被 configChanges 拦住了，系统不会重建，深浅色得自己换一次。 */
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val night = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        if (night == nightMode) return
+        nightMode = night
+        recreate()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         UiTheme.applyConfiguredTheme(this)
+        nightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         setContentView(R.layout.activity_settings)
         SystemBars.install(this, findViewById(android.R.id.content), findViewById(R.id.topBar))
         UiTheme.apply(this)
@@ -38,8 +54,8 @@ class SettingsActivity : Activity() {
         savePassword.isChecked = SettingsStore.savePassword(this)
         dynamicTheme.isChecked = SettingsStore.dynamicTheme(this)
 
-        findViewById<android.view.View>(R.id.backBtn).setOnClickListener { finish() }
-        findViewById<android.widget.Button>(R.id.saveSettingsBtn).setOnClickListener { save() }
+        findViewById<View>(R.id.backBtn).setOnClickListener { finish() }
+        findViewById<TextView>(R.id.saveSettingsBtn).setOnClickListener { save() }
         Anim.press(findViewById(R.id.backBtn))
         Anim.press(findViewById(R.id.saveSettingsBtn))
         Anim.stagger(listOf(findViewById(R.id.settingsContent)))

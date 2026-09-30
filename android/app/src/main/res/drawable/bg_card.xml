@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 卡片：大圆角 + 极轻描边，靠明度差和圆角把分组托起来 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="@color/mono_white" />
+    <solid android:color="@color/app_surface" />
+    <corners android:radius="@dimen/radius_l" />
     <stroke
         android:width="1dp"
-        android:color="@color/mono_line" />
-    <corners android:radius="@dimen/radius_m" />
+        android:color="@color/card_line" />
 </shape>

@@ -24,7 +24,9 @@ Windows 版生成 `.ics` 之后，你得把文件传到手机、用文件管理�
 1. 装 APK（首次安装要允许「安装未知来源应用」）
 2. 填学号和密码，点「获取课表」
 3. 程序自动登录、把 20 周全抓一遍（十几秒，界面上一行行打印进度）
-   - **只想快速更新？长按「获取课表」**：弹出「全面重新获取 / 全面更新 / 近 5 周 / 近 3 周」。
+   - **只想快速更新？长按「获取课表」**，会从屏幕底下浮出一个面板：「全面重新获取 / 全面更新 / 近 5 周 / 近 3 周」。
+     点一行只是把它**选中**（右边的圆圈涂满），按最下面的**「完成」**才把它**记成默认范围**——这时还不会开抓，
+     真正开始是你再点一下「获取课表」，按钮下面也会写明这次要抓第几周到第几周。
      「近 3 周」只抓本周和之后两周，两三秒就完事，日常看课表更新够用了。
      不论选哪个，都是**一周一个请求、老老实实串行发**，不会为了快去并发打学校服务器。
    - 窄范围（近 5 周 / 近 3 周）抓来的课表**写入日历时只做增和改、不删**：范围外的课这次没抓到，
@@ -76,7 +78,8 @@ Windows 版生成 `.ics` 之后，你得把文件传到手机、用文件管理�
 
 **每次获取都要等十几秒，太慢了？**
 **长按「获取课表」**可以选范围：「全面重新获取」是第 1~20 周全部重抓（最慢），「全面更新」从本周抓到第 20 周，
-「近 5 周」「近 3 周」只抓本周往后的几周，两三秒就好。范围越窄越快，而且**永远是一周一个请求、串行发送**，
+「近 5 周」「近 3 周」只抓本周往后的几周，两三秒就好。在面板里点一行、按「完成」，这个范围就记住了，
+以后点「获取课表」直接用。范围越窄越快，而且**永远是一周一个请求、串行发送**，
 不会为了提速去并发，给学校服务器添麻烦。
 
 **能不能自动同步？**
@@ -101,7 +104,7 @@ Windows 版生成 `.ics` 之后，你得把文件传到手机、用文件管理�
 - **Kotlin + 传统 XML 布局**，Activity 直接继承 `android.app.Activity`
 - **0 个第三方运行时依赖**：网络用 `HttpURLConnection`、JSON 用系统 `org.json`、加密用 `javax.crypto`、写日历用 `CalendarContract`、存文件用 `MediaStore`
 - `minSdk 26` / `targetSdk 35`，约 1 MB
-- 界面只有黑白灰三种颜色，配色集中在 `res/values/colors.xml` 和 `themes.xml`
+- 界面只有黑白灰三种颜色，**跟随系统亮 / 暗**（在系统里切深色会立刻换过来），配色集中在 `res/values/colors.xml`、`res/values-night/colors.xml` 和 `themes.xml`
 - 动效全部用系统自带 API（`ViewPropertyAnimator` / `ValueAnimator` / 资源动画），没有引入动画库
 
 `minSdk 26` 是刻意的：`java.util.Base64` 从 API 26 起可用，这样密码加密逻辑才能被纯 JVM 单元测试覆盖。
@@ -120,21 +123,27 @@ powershell -ExecutionPolicy Bypass -File build-apk.ps1
 
 ```
 app/src/main/java/com/quack/curriculumexporter/
-├── MainActivity.kt       主界面：登录 + 抓取 + 进度日志
+├── MainActivity.kt       主界面：登录 + 抓取 + 进度日志 + 长按选范围
 ├── ResultActivity.kt     结果页：预览 + 写日历 / 导出 .ics
 ├── EduClient.kt          教务系统客户端（登录、按周抓取）
 ├── EduCrypto.kt          前端 xC.encrypt 的等价实现
 ├── IcsBuilder.kt         ICS 生成（折行 / 转义 / 时区 / 军训事件）
 ├── CalendarWriter.kt     写入系统日历 + 「上次导入了什么」的记录
+├── TermWeeks.kt          从抓到的日期网格反推校历起点，算「今天第几周」
 ├── SettingsActivity.kt   高级设置
 ├── SettingsStore.kt      应用设置状态
 ├── SecureCredentials.kt  Android Keystore 加密密码
-├── UiTheme.kt            系统动态主题色
+├── UiTheme.kt            顶栏 / 状态栏 / 强调色的运行时着色
 ├── Exporter.kt           .ics 落盘 + 分享
 ├── SchedulePreview.kt    课表预览的富文本渲染
 ├── Models.kt             CourseItem / WeekData / Schedule
 ├── AppState.kt           两个 Activity 之间传抓取结果（同一进程静态持有）
+├── Sheet.kt              底部弹出面板（选范围、选日历共用）
+├── DialogBox.kt          自绘圆角对话框
 ├── SegmentedControl.kt   自写的分段控件
+├── SystemBars.kt         edge-to-edge 下状态栏 / 导航栏的留白
+├── CrashReporter.kt      崩溃兜底记录（下次启动弹出来）
+├── AppInfo.kt            读版本号
 └── Anim.kt               动效小工具
 ```
 

@@ -25,6 +25,15 @@
         <item name="android:textSize">@dimen/text_label</item>
     </style>
 
+    <!-- 圆角卡片，分组容器 -->
+    <style name="Card">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_card</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:padding">@dimen/space_l</item>
+    </style>
+
     <!-- 通用单行输入框；inputType 由各布局自己指定 -->
     <style name="InputField">
         <item name="android:layout_width">match_parent</item>
@@ -32,7 +41,10 @@
         <item name="android:background">@drawable/bg_input</item>
         <item name="android:fontFamily">monospace</item>
         <item name="android:importantForAutofill">no</item>
-        <item name="android:padding">@dimen/space_m</item>
+        <item name="android:paddingStart">@dimen/input_pad_h</item>
+        <item name="android:paddingTop">@dimen/input_pad_v</item>
+        <item name="android:paddingEnd">@dimen/input_pad_h</item>
+        <item name="android:paddingBottom">@dimen/input_pad_v</item>
         <item name="android:singleLine">true</item>
         <item name="android:textColor">@color/mono_black</item>
         <item name="android:textColorHint">@color/mono_gray_hint</item>
@@ -43,13 +55,18 @@
         <item name="android:inputType">textPassword</item>
     </style>
 
+    <!--
+      按钮一律用 TextView + 这些 style，不用平台 <Button>：
+      Widget.Material.Button 自带 backgroundTint，会把自定义圆角背景整个涂掉，
+      而且还有全大写/最小宽度/升降动画等一堆需要逐个关掉的默认值。
+    -->
     <style name="ButtonPrimary">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/button_height</item>
         <item name="android:background">@drawable/bg_button_primary</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
         <item name="android:gravity">center</item>
-        <item name="android:minHeight">0dp</item>
-        <item name="android:minWidth">0dp</item>
         <item name="android:padding">0dp</item>
         <item name="android:stateListAnimator">@animator/button_press</item>
         <item name="android:textColor">@color/button_text_primary</item>
@@ -61,13 +78,38 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/button_height_s</item>
         <item name="android:background">@drawable/bg_button_secondary</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
         <item name="android:gravity">center</item>
-        <item name="android:minHeight">0dp</item>
-        <item name="android:minWidth">0dp</item>
         <item name="android:padding">0dp</item>
         <item name="android:stateListAnimator">@animator/button_press</item>
-        <item name="android:textColor">@color/mono_black</item>
+        <item name="android:textColor">@color/button_text_secondary</item>
         <item name="android:textSize">@dimen/text_small</item>
+    </style>
+
+    <!-- 纯文字按钮：用于浮层里的次要动作 -->
+    <style name="ButtonText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/button_height_s</item>
+        <item name="android:background">@drawable/bg_button_text</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:padding">0dp</item>
+        <item name="android:textColor">@color/mono_gray_text</item>
+        <item name="android:textSize">@dimen/text_small</item>
+    </style>
+
+    <!-- 顶栏上的图标按钮（返回等） -->
+    <style name="TopBarButton">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:background">@drawable/bg_button_text</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:scaleType">fitCenter</item>
     </style>
 
     <!-- 分段控件里的可点标签 -->
@@ -90,11 +132,117 @@
         <item name="android:textSize">@dimen/text_mono</item>
     </style>
 
-    <!-- 设置行：左标题 + 右开关 -->
+    <!-- 设置行：左标题（+可选说明）+ 右开关 -->
     <style name="SettingRow">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:gravity">center_vertical</item>
+        <item name="android:minHeight">@dimen/row_min_height</item>
         <item name="android:orientation">horizontal</item>
+    </style>
+
+    <style name="SettingTitle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/mono_black</item>
+        <item name="android:textSize">@dimen/text_body</item>
+    </style>
+
+    <style name="SettingHint">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">3dp</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+        <item name="android:textColor">@color/mono_gray_text</item>
+        <item name="android:textSize">@dimen/text_label</item>
+    </style>
+
+    <!-- ===== 浮层 ===== -->
+
+    <!-- 浮层里的一行选项：左边文字，右边圆形选择点 -->
+    <style name="ChoiceRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_choice_row</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:minHeight">@dimen/row_min_height</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingStart">@dimen/space_m</item>
+        <item name="android:paddingTop">@dimen/space_m</item>
+        <item name="android:paddingEnd">@dimen/space_m</item>
+        <item name="android:paddingBottom">@dimen/space_m</item>
+    </style>
+
+    <style name="ChoiceTitle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/mono_black</item>
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="ChoiceDesc">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">3dp</item>
+        <item name="android:textColor">@color/mono_gray_text</item>
+        <item name="android:textSize">@dimen/text_label</item>
+    </style>
+
+    <style name="ChoiceDot">
+        <item name="android:layout_width">22dp</item>
+        <item name="android:layout_height">22dp</item>
+        <item name="android:layout_marginStart">@dimen/space_l</item>
+        <item name="android:background">@drawable/bg_radio</item>
+    </style>
+
+    <style name="SheetHandle">
+        <item name="android:layout_width">@dimen/sheet_handle_w</item>
+        <item name="android:layout_height">@dimen/sheet_handle_h</item>
+        <item name="android:layout_gravity">center_horizontal</item>
+        <item name="android:layout_marginTop">@dimen/space_s</item>
+        <item name="android:background">@drawable/bg_handle</item>
+    </style>
+
+    <style name="SheetTitle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/space_m</item>
+        <item name="android:paddingStart">@dimen/space_xl</item>
+        <item name="android:paddingEnd">@dimen/space_xl</item>
+        <item name="android:textColor">@color/mono_black</item>
+        <item name="android:textSize">@dimen/text_dialog_title</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="SheetHint">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/space_s</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+        <item name="android:paddingStart">@dimen/space_xl</item>
+        <item name="android:paddingEnd">@dimen/space_xl</item>
+        <item name="android:textColor">@color/mono_gray_text</item>
+        <item name="android:textSize">@dimen/text_label</item>
+    </style>
+
+    <!-- 居中的圆角对话框 -->
+    <style name="DialogTitle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/mono_black</item>
+        <item name="android:textSize">@dimen/text_dialog_title</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="DialogMessage">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/space_m</item>
+        <item name="android:lineSpacingExtra">3dp</item>
+        <item name="android:textColor">@color/mono_gray_text</item>
+        <item name="android:textSize">@dimen/text_small</item>
     </style>
 </resources>

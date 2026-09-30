@@ -1,31 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 语义颜色：亮色主题。values-night 会覆盖同名颜色。 -->
-    <color name="app_background">#FFFAFAFA</color>
+    <!--
+      语义颜色：亮色主题。values-night 会覆盖同名颜色。
+      整体保持黑白灰：层级靠「背景 vs 卡片」的明度差和圆角表达，不引入彩色。
+    -->
+    <color name="app_background">#FFF1F1F4</color>
     <color name="app_surface">#FFFFFFFF</color>
-    <color name="app_surface_deep">#FFF0F0F0</color>
-    <color name="app_line">#FFD9D9D9</color>
-    <color name="app_divider">#FFE5E5E5</color>
+    <color name="app_surface_deep">#FFE8E8EC</color>
+    <color name="app_line">#FFDBDBE0</color>
+    <color name="app_divider">#FFEDEDF0</color>
+    <color name="card_line">#FFEBEBEF</color>
 
-    <color name="text_primary">#FF111111</color>
-    <color name="text_secondary">#FF666666</color>
-    <color name="text_hint">#FF999999</color>
+    <color name="text_primary">#FF111113</color>
+    <color name="text_secondary">#FF62626A</color>
+    <color name="text_hint">#FF9B9BA3</color>
 
-    <color name="accent">#FF111111</color>
+    <color name="accent">#FF111113</color>
     <color name="on_accent">#FFFFFFFF</color>
-    <color name="plain_accent">#FF111111</color>
+    <color name="plain_accent">#FF111113</color>
+    <!--
+      顶栏 / 状态栏底色，刻意不跟 accent 走。
+      暗色模式下 accent 是浅色（白胶囊 + 黑字），顶栏要是也涂成浅色，就会变成横在
+      深色界面顶上的一条白带；所以顶栏另有自己的明暗：亮色近黑、暗色深灰。
+    -->
+    <color name="topbar">#FF111113</color>
     <color name="ripple">#1A000000</color>
     <color name="ripple_on_accent">#33FFFFFF</color>
+
+    <!-- 浮层（底部面板 / 圆角对话框）内部用色 -->
+    <color name="row_selected">#0F000000</color>
+    <color name="handle">#FFD2D2D8</color>
+    <color name="field_bg">#FFF4F4F6</color>
+    <color name="ghost_line">#FFD8D8DE</color>
 
     <!-- 旧资源名保留为兼容别名，所有 drawable/style 会随主题自动切换。 -->
     <color name="mono_black">@color/text_primary</color>
     <color name="mono_white">@color/app_surface</color>
     <color name="mono_gray_text">@color/text_secondary</color>
     <color name="mono_gray_hint">@color/text_hint</color>
-    <color name="mono_surface">@color/app_surface</color>
     <color name="mono_surface_deep">@color/app_surface_deep</color>
-    <color name="mono_line">@color/app_line</color>
     <color name="mono_divider">@color/app_divider</color>
-    <color name="mono_ripple">@color/ripple</color>
-    <color name="mono_ripple_light">@color/ripple_on_accent</color>
 </resources>

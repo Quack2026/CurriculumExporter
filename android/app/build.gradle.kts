@@ -14,8 +14,8 @@ android {
         // 26 是刻意的：java.util.Base64 从 API 26 起可用，密码加密逻辑因此能被纯 JVM 单测覆盖
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.0.3"
+        versionCode = 5
+        versionName = "1.0.4"
     }
 
     buildTypes {
