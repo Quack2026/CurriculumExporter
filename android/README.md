@@ -7,6 +7,17 @@
 
 ---
 
+## 界面
+
+<p align="center">
+  <img src="img/app-main.jpg" width="215" alt="主界面" />
+  <img src="img/app-fetch-range.jpg" width="215" alt="选择获取范围" />
+  <img src="img/app-settings-light.jpg" width="215" alt="高级设置（亮色）" />
+  <img src="img/app-settings-dark.jpg" width="215" alt="高级设置（暗色）" />
+</p>
+
+---
+
 ## 为什么还要个安卓版
 
 Windows 版生成 `.ics` 之后，你得把文件传到手机、用文件管理打开、再选「日历」导入 —— 在手机上这套流程相当绕。

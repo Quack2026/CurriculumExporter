@@ -19,7 +19,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 发布的是哪个版本？按 tag 前缀判断：
+      #   android-*  → 安卓版，产物直接用仓库里的 APK（安卓包在本地用 Gradle 构建，流程见 android/HANDOFF.md）
+      #   其他       → Windows 版，产物是这次 CI 现编的 exe
+      - name: Decide release target
+        id: target
+        shell: pwsh
+        run: |
+          $tag = '${{ github.event.release.tag_name }}'
+          $isAndroid = $tag -like 'android-*'
+          "android=$($isAndroid.ToString().ToLower())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "release tag: '$tag' -> android=$isAndroid"
+
       - name: Locate Roslyn compiler
+        if: steps.target.outputs.android != 'true'
         shell: pwsh
         run: |
           $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
@@ -33,6 +46,7 @@ jobs:
           & $csc /version
 
       - name: Build (deterministic)
+        if: steps.target.outputs.android != 'true'
         shell: pwsh
         run: |
           $out = Join-Path $env:GITHUB_WORKSPACE 'curriculum-exporter-v1.0.0-win-net48.exe'
@@ -45,6 +59,7 @@ jobs:
           Get-Item $out | Format-List Name, Length, LastWriteTime
 
       - name: Show SHA256
+        if: steps.target.outputs.android != 'true'
         shell: pwsh
         run: |
           $hash = (Get-FileHash .\curriculum-exporter-v1.0.0-win-net48.exe -Algorithm SHA256).Hash
@@ -59,13 +74,22 @@ jobs:
           "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
 
       - name: Upload artifact
+        if: steps.target.outputs.android != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: curriculum-exporter
           path: curriculum-exporter-v1.0.0-win-net48.exe
 
-      - name: Attach to Release
-        if: github.event_name == 'release'
+      # 安卓版的 APK 已在仓库里（android/curriculum-exporter-v1.0.0-android.apk），
+      # 发布 android-* tag 的 Release 时直接挂上去；这一步不依赖上面的 Windows 构建。
+      - name: Attach Android APK to Release
+        if: github.event_name == 'release' && steps.target.outputs.android == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: android/curriculum-exporter-*-android.apk
+
+      - name: Attach Windows exe to Release
+        if: github.event_name == 'release' && steps.target.outputs.android != 'true'
         uses: softprops/action-gh-release@v2
         with:
           files: curriculum-exporter-v1.0.0-win-net48.exe

@@ -440,3 +440,6 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
 
 - 根目录交付包 `curriculum-exporter-v1.0.0-android.apk` 是**手工**从 `app/build/outputs/apk/debug/app-debug.apk` 复制的，`build-apk.ps1` 不会自动同步，改完代码记得覆盖。**开发期的 `curriculum-exporter-v1.0.1 ~ v1.0.5-android.apk` 都已删除** —— 根目录只留这一版正式包，避免装错。
 - 仓库：`https://github.com/Quack2026/CurriculumExporter.git`（分支 `main`），安卓版在 `android/` 子目录。提交信息含中文用 `git commit -F <文件>`。
+- **根 `README.md` 是仓库门面，主推安卓版**：顶部下载按钮直链指向 `releases/download/android-v1.0.0/curriculum-exporter-v1.0.0-android.apk`，Windows 版收在「Windows 版（备选）」小节里。安卓预览图在 `android/img/app-*.jpg`（`app-main` / `app-fetch-range` / `app-settings-light` / `app-settings-dark`），原来是微信导出的中文名，已改成英文。
+- **发布按 tag 前缀分流**（`.github/workflows/build.yml` 的 `Decide release target` 一步）：tag 是 `android-*` → 只把 `android/curriculum-exporter-*-android.apk` 挂到 Release，跳过 Windows 编译；其他 tag → 现编 Windows exe 再挂，附 SHA256。所以**发安卓 Release 不用在本机跑任何东西**，在网页上 Draft a new release 选 `android-vX.Y.Z` 发布即可。
+- **发新版安卓包要动三处**：`app/build.gradle.kts` 里的 `versionCode` / `versionName`；本地 `build-apk.ps1` 出包后覆盖成 `android/curriculum-exporter-<新版本>-android.apk`（**旧包删掉，只留这一份** —— CI 是用通配符找它的，留两份会挂错）；根 `README.md` 里的下载直链与 tag 名。
