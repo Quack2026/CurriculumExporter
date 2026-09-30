@@ -7,7 +7,7 @@
 
 ---
 
-## 界面
+## 应用界面
 
 <p align="center">
   <img src="img/app-main.jpg" width="215" alt="主界面" />
