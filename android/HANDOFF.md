@@ -1,7 +1,12 @@
 # 交接文档 · CurriculumExporter 安卓版
 
-> 更新时间：2026-09-30 深夜（v1.0.5，versionCode 6）
+> 更新时间：2026-09-30 深夜（**v1.0.0**，versionCode 1）
 > 读这份文档的人默认要**继续改这个项目**；下游的「用户使用说明」在 `README.md`。
+>
+> **版本号说明**：安卓版从这个提交起正式定为 **1.0.0 / versionCode 1**（首个正式发布，已打 tag `v1.0.0`）。
+> 开发期间用过的 **1.0.1 ~ 1.0.5（versionCode 2~6）编号作废** —— 后面 5.x 各节标题里保留的那些版本号只是当时的历史记录，
+> 别拿它们跟正式版号对照。**注意 versionCode 从 6 降回了 1**：手机上装过开发包的，系统会拒绝覆盖安装（Android 不允许降级），
+> 必须先卸载再装，而卸载会连带清掉 prefs 和 Keystore 里的密码，得重新填一次账号。
 
 ## 1. 项目坐标
 
@@ -9,7 +14,7 @@
 |---|---|
 | 源码 | `C:\Tools\CurriculumExporter\android`（仓库 `Quack2026/CurriculumExporter` 的 `android/` 子目录，分支 `main`；旧路径 `C:\Tools\CurriculumExporter-Android` 只是个 junction） |
 | 包名 | `com.quack.curriculumexporter` |
-| 版本 | versionCode **6** / versionName **1.0.5** |
+| 版本 | versionCode **1** / versionName **1.0.0**（首个正式发布，tag `v1.0.0`） |
 | SDK | minSdk 26 · targetSdk 35 · compileSdk 35 · buildTools **35.0.0**（钉住，避免去下损坏的 34.0.0） |
 | 技术栈 | Kotlin + XML，**0 个第三方运行时依赖**（仅测试用 junit 4.13.2 + org.json:json:20240303） |
 | Windows 原版参考 | `C:\Tools\CurriculumExporter`（C#/.NET 4.8，`src/Network.cs` 是接口与加密的权威实现，**只读参考**；和安卓版同属一个仓库，仓库根就是它） |
@@ -25,7 +30,7 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
 - 脚本按**自身所在目录**定位项目，所以目录整体搬家也不用改脚本。
 - 脚本内部跑 `lintDebug assembleDebug testDebugUnitTest --console=plain`，日志写 `build.log`，末行打印 APK 路径与单测报告名。
 - 产物：`app\build\outputs\apk\debug\app-debug.apk`（release 沿用 debug 签名）。
-- 脚本**不复制** APK 到项目根；根目录那份 `curriculum-exporter-v1.0.5-android.apk` 是手工放的历史包，需要时手动同步。
+- 脚本**不复制** APK 到项目根；根目录那份 `curriculum-exporter-v1.0.0-android.apk` 是手工放的历史包，需要时手动同步。
 
 工具链位置（本机实测）：
 
@@ -198,7 +203,7 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
 
 另外 `SettingsStore.dynamicTheme` 默认值由 `true` 改成 **`false`**：旧默认是跟随系统主题色，A12+ 会取壁纸色（实机上是紫蓝），与「纯黑白」的既定偏好冲突。要跟色的仍可在「高级设置 → 外观」里打开。
 
-### 5.9 动效与交互重做（第五批，v1.0.5）
+### 5.9 动效与交互重做（第五批，正式定为 v1.0.0）
 
 **用户诉求（原话要点）**：「动画效果太弱了，各种按键反馈都很弱，页面功能交互设计的感觉有点糟糕，还有页面切换」，浮窗弹出的动画也要有，并明确授权自主设计（不用问）。
 
@@ -375,7 +380,7 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
 
 构建：`BUILD SUCCESSFUL`、**20 个单测全过**（4 + 9 + 7）、lint **0 errors / 10 warnings**（与上一批同类，全是既有噪音）。
 
-真机验证（同日 22:57–23:04，OPPO PDRM00，校历第 4 周，`versionName 1.0.5`）：
+真机验证（同日 22:57–23:04，OPPO PDRM00，校历第 4 周；当时包上写的是 `versionName 1.0.5`，即现在的正式版 1.0.0）：
 
 | 验证项 | 结果 |
 | --- | --- |
@@ -387,11 +392,11 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
 | 设置页整行可点 | `uiautomator dump` 前后对比：点「显示全部日历」行左侧空白 → `showAllSwitch` `false` → `true`，其余 Switch 不动 |
 | 保存提示链路 | 设置页「保存设置」→ 回主界面浮出「设置已保存」（`AppState.pendingNotice` → `onResume` 消费） |
 | 权限对话框 | 重装后首次「写入系统日历」→ `DialogBox`「需要日历权限」（左描边「只导出文件」/ 右白胶囊「去授权」），圆角与遮罩正常 |
-| 亮色模式 | 主界面 / 结果页 / 面板 全部纯黑白灰，没有彩色残留；`版本 1.0.5` 显示正确 |
+| 亮色模式 | 主界面 / 结果页 / 面板 全部纯黑白灰，没有彩色残留；版本号显示正确（当时是 1.0.5，正式版为 1.0.0） |
 
 > 测试期间把「显示全部日历」开关来回拨过，收尾已恢复成默认关闭；设备已 `cmd uimode night no`、`svc power stayon false`，`/sdcard` 上的截图与 `ui*.xml`、本轮导出的 3 个 `.ics` 都已删除。
 
 维护须知：
 
-- 根目录交付包 `curriculum-exporter-v1.0.5-android.apk` 是**手工**从 `app/build/outputs/apk/debug/app-debug.apk` 复制的，`build-apk.ps1` 不会自动同步，改完代码记得覆盖。**上一版 `curriculum-exporter-v1.0.4-android.apk` 已删除** —— 根目录只留最新一版，避免装错。
+- 根目录交付包 `curriculum-exporter-v1.0.0-android.apk` 是**手工**从 `app/build/outputs/apk/debug/app-debug.apk` 复制的，`build-apk.ps1` 不会自动同步，改完代码记得覆盖。**开发期的 `curriculum-exporter-v1.0.1 ~ v1.0.5-android.apk` 都已删除** —— 根目录只留这一版正式包，避免装错。
 - 仓库：`https://github.com/Quack2026/CurriculumExporter.git`（分支 `main`），安卓版在 `android/` 子目录。提交信息含中文用 `git commit -F <文件>`。
