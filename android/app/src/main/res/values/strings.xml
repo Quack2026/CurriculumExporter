@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">广理课表导出</string>
+    <!--
+      应用名（桌面图标下的标签、系统「应用信息」页、主界面顶栏都用它）。
+      用户定的方向：以 GL 开头（广东理工）、短、英文、一眼能看出是干什么的。
+    -->
+    <string name="app_name">GLTimetable</string>
 
     <!-- 主界面 -->
     <string name="label_user">学号</string>

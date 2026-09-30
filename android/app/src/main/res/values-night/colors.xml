@@ -15,7 +15,7 @@
     <color name="accent">#FFF4F4F6</color>
     <color name="on_accent">#FF0C0C0E</color>
     <color name="plain_accent">#FFF4F4F6</color>
-    <!-- 顶栏 / 状态栏：暗色下也是深色，跟亮色一样「深底浅字」，见 values/colors.xml 的说明。 -->
+    <!-- 顶栏 / 状态栏：暗色下是深灰底 + 浅字，与亮色的「白底深字」相对，见 values/colors.xml 的说明。 -->
     <color name="topbar">#FF1A1A1D</color>
     <color name="topbar_line">#1AFFFFFF</color>
     <color name="ripple">#3DFFFFFF</color>
@@ -32,9 +32,9 @@
     <color name="field_bg">#FF232327</color>
     <color name="ghost_line">#FF3A3A40</color>
 
-    <!-- 启动图标：跟亮色对调 —— 白底 + 近黑图形。 -->
-    <color name="icon_background">#FFFFFFFF</color>
-    <color name="icon_foreground">#FF111113</color>
+    <!-- 启动图标：跟亮色对调 —— 近黑底 + 白图形。 -->
+    <color name="icon_background">#FF111113</color>
+    <color name="icon_foreground">#FFFFFFFF</color>
 
     <!-- 夜间主题也提供旧资源名，drawable/style 无需分叉。 -->
     <color name="mono_black">@color/text_primary</color>

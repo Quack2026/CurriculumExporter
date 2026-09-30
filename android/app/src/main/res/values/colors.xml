@@ -20,12 +20,14 @@
     <color name="plain_accent">#FF111113</color>
     <!--
       顶栏 / 状态栏底色，刻意不跟 accent 走。
-      暗色模式下 accent 是浅色（白胶囊 + 黑字），顶栏要是也涂成浅色，就会变成横在
-      深色界面顶上的一条白带；所以顶栏另有自己的明暗：亮色近黑、暗色深灰。
+      暗色模式下 accent 是浅色（白胶囊 + 黑字），顶栏要是也涂成 accent，就成了横在
+      深色界面顶上的一条白带；所以顶栏有自己的明暗：**亮色纯白、暗色深灰**。
+      亮色白顶栏的前景（标题/返回箭头）与状态栏图标颜色由 UiTheme.apply() 按底色明暗
+      现算，不用手工配；这里只负责底色这一档。
     -->
-    <color name="topbar">#FF111113</color>
-    <!-- 顶栏底下那条极细的分隔线：让顶栏和滚动内容之间有一道边界 -->
-    <color name="topbar_line">#1FFFFFFF</color>
+    <color name="topbar">#FFFFFFFF</color>
+    <!-- 顶栏底下那条极细的分隔线：白顶栏配浅灰线，才看得出跟浅灰内容区的边界 -->
+    <color name="topbar_line">#14000000</color>
     <color name="ripple">#26000000</color>
     <color name="ripple_on_accent">#38FFFFFF</color>
 
@@ -42,12 +44,12 @@
     <color name="ghost_line">#FFD8D8DE</color>
 
     <!--
-      启动图标：亮色下是「近黑底 + 白图形」，暗色下整体对调（见 values-night）。
-      图形缩在安全区内、四周会露出一圈底色，所以底色也得跟着反色 —— 否则暗色桌面上
-      会是一块突兀的黑方块。图标不跟随 accent（动态色）走，避免被系统染成紫色。
+      启动图标：亮色是「白底 + 近黑图形」，暗色整体对调（见 values-night）。
+      图形缩在安全区内、四周会露出一圈底色，所以底色也得跟着反色。
+      图标不跟随 accent（动态色）走，避免被系统染成紫色。
     -->
-    <color name="icon_background">#FF111113</color>
-    <color name="icon_foreground">#FFFFFFFF</color>
+    <color name="icon_background">#FFFFFFFF</color>
+    <color name="icon_foreground">#FF111113</color>
 
     <!-- 旧资源名保留为兼容别名，所有 drawable/style 会随主题自动切换。 -->
     <color name="mono_black">@color/text_primary</color>

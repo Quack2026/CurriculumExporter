@@ -14,6 +14,7 @@
 |---|---|
 | 源码 | `C:\Tools\CurriculumExporter\android`（仓库 `Quack2026/CurriculumExporter` 的 `android/` 子目录，分支 `main`；旧路径 `C:\Tools\CurriculumExporter-Android` 只是个 junction） |
 | 包名 | `com.quack.curriculumexporter` |
+| 应用名 | **`GLTimetable`**（`@string/app_name`；桌面标签、系统应用信息页、主界面顶栏标题都用它。写入系统日历时新建的日历名仍是中文「广理课表」，`.ics` 文件名前缀也一样 —— 那两个是用户在日历/文件里认的东西，跟应用名不是一回事，没动） |
 | 版本 | versionCode **1** / versionName **1.0.0**（首个正式发布，tag `android-v1.0.0`） |
 | SDK | minSdk 26 · targetSdk 35 · compileSdk 35 · buildTools **35.0.0**（钉住，避免去下损坏的 34.0.0） |
 | 技术栈 | Kotlin + XML，**0 个第三方运行时依赖**（仅测试用 junit 4.13.2 + org.json:json:20240303） |
@@ -198,7 +199,7 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
 **暗色模式的三个坑（都修了）**
 
 1. **`uiMode` 写在 `configChanges` 里 → 系统切深色时 Activity 不重建**，`values-night` 那套颜色根本不换，表现出来是「切了深色，界面几乎没变」（只有运行时涂的顶栏 / 状态栏跟着变，反而变成半生不熟的中间态）。修法：三个 Activity 都加 `onConfigurationChanged`，比对 `UI_MODE_NIGHT_MASK`，真变了就 `recreate()`。`MainActivity` 抓取中不能重建（会丢半截结果），先记 `pendingThemeRecreate`，等 `finishFetchingUi()` 收尾时再补。
-2. **顶栏不该跟 accent 走**：暗色下 accent 是浅色（白胶囊 + 黑字），顶栏若也涂 accent，就成了横在深色界面顶上的一条白带。新增 `@color/topbar`（亮 `#111113` / 暗 `#1A1A1D`）专供顶栏与状态栏：`UiTheme.apply()`、两份 `themes.xml`、`SystemBars.install()` 全部改用它；`windowLightStatusBar` 两边都写 `false`（顶栏始终深色 → 系统图标始终浅色）。顺带删掉了没人调用的 `UiTheme.accent()`。
+2. **顶栏不该跟 accent 走**：暗色下 accent 是浅色（白胶囊 + 黑字），顶栏若也涂 accent，就成了横在深色界面顶上的一条白带。新增 `@color/topbar`（亮 `#111113` / 暗 `#1A1A1D`；**亮色后来在第六批按用户要求改成纯白，见 5.10**）专供顶栏与状态栏：`UiTheme.apply()`、两份 `themes.xml`、`SystemBars.install()` 全部改用它；`windowLightStatusBar` 两边都写 `false`（**这条在顶栏改白后不再适用** —— 现在状态栏图标明暗由 `UiTheme.apply()` 按顶栏底色现算）。顺带删掉了没人调用的 `UiTheme.accent()`。
 3. **`values-night` 优先级高于 `values-v31`**，所以「暗色 + 动态色」必须在 `values-night-v31` 里单独给一次（`accent` / `on_accent` / `ripple_on_accent`）。
 
 另外 `SettingsStore.dynamicTheme` 默认值由 `true` 改成 **`false`**：旧默认是跟随系统主题色，A12+ 会取壁纸色（实机上是紫蓝），与「纯黑白」的既定偏好冲突。要跟色的仍可在「高级设置 → 外观」里打开。
@@ -269,8 +270,13 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
 - **缩放 0.42 的来历**：系统只显示 108 画布**中心的 72dp**，而「绝不被任何遮罩裁掉」的安全区是中心**直径 66 的圆**。图形是正方形，要整个落进那个圆，边长最多 `66 / √2 ≈ 46.7` → `46.7 / 108 ≈ 0.43`，取 **0.42**（边长 45.4）。真机实测图形约占可见区的 63%，正是用户在预览里挑中的那个留白感。
   **别把预览图里的百分比直接抄成 `scale`** —— 预览量的是「占整个 108 画布」，真机看到的是「占中心 72」，两者差 1.5 倍。
 - **描边那组 path 不要**：源稿 `<g>` 里的 `stroke` 元素（`polyline` / `line` / 两条 `c` 曲线）与三个实心 path 的边界完全重合，是 Illustrator 顺手导出的轮廓，留着只会糊边。
-- **日夜反色**：颜色走 `@color/icon_background` / `@color/icon_foreground` 两个语义色（亮色 = 近黑底 + 白图形，夜间对调），因此只有一份 `ic_launcher.xml`。icon 色刻意不跟 `accent`，避免被系统动态色染成紫。
+- **日夜反色**：颜色走 `@color/icon_background` / `@color/icon_foreground` 两个语义色 —— **亮色 = 白底 + 近黑图形，暗色整体对调**（用户 2026-10-01 看过真机后定的方向，`values` / `values-night` 里把两个色对调即可），因此只有一份 `ic_launcher.xml`。icon 色刻意不跟 `accent`，避免被系统动态色染成紫。
 - **`<monochrome>` 层**：供 Android 13+ 主题图标使用，顺带消掉 `MonochromeLauncherIcon` 警告；它的 path 与缩放必须和前景完全一致（0.42），否则一开主题图标图形会突然变大。按 AOSP 的 `AdaptiveIconDrawable.inflate()` 实现，API 26–32 会跳过不认识的子标签，所以直接写在 `mipmap-anydpi-v26/ic_launcher.xml` 里是安全的。
+
+**同一批还改了两处外观（用户看完真机提的）**：
+
+- **亮色顶栏改纯白**：原来亮色顶栏是近黑（`#111113`），底下接着纯白卡片和浅灰背景，用户觉得「整体配色太冲突」。现在 `topbar` 亮色 = `#FFFFFFFF`、暗色 = `#1A1A1D`；`topbar_line` 亮色 = `#14000000`（浅灰细线，白顶栏下仍能看出分界）、暗色 = `#1AFFFFFF`。**只改了颜色资源**：顶栏标题/返回箭头的前景色和状态栏图标明暗都是 `UiTheme.apply()` 按顶栏底色现算的（`onAccent()` 亮度 > 0.58 → 黑字 → 顺带挂 `SYSTEM_UI_FLAG_LIGHT_STATUS_BAR`），改白之后状态栏图标自动变黑。另外把 `TopBarTitle` 的静态 `android:textColor` 和 `ic_back.xml` 的 `fillColor` 从 `@color/on_accent` 换成 `@color/text_primary`，免得首帧（`apply()` 还没跑）出现白底白字。注意 `ic_check.xml` / `bg_button_primary.xml` / `button_text_primary.xml` 仍然要用 `on_accent`（按钮上永远是白胶囊黑字），别一起改。
+- **应用名换成英文短名**：`@string/app_name` 从「广理课表导出」改成 **`GLTimetable`**（GL = 广东理工，Timetable 一眼看出是干什么的；短、纯英文、辨识度高）。桌面标签、系统应用信息页、主界面顶栏标题、`AndroidManifest` 的 `android:label` 全走这一个字符串，改一处即可。
 
 ## 6. 踩过的坑
 
@@ -302,10 +308,10 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
 - 真机自动点时，先确认目标页在顶部再算坐标：`MainActivity` 的日志一长整页就能滚，滚到底后「高级设置」等按钮的**旧坐标会落到日志上**，表现为"点了没反应"（本轮为此白跑两轮）。可靠回顶：`am force-stop` + `am start`。**别用 `input swipe` 向下拖回顶** —— ColorOS 会把整屏中部的下滑手势当成"拉出通知栏"，通知栏一旦盖上，之后所有 `input tap` 全落在它上面；已经拉下来就用 `cmd statusbar collapse` 收掉。
 - `SettingsActivity` / `ResultActivity` **不是 exported**，`am start -n .../.SettingsActivity` 会被静默拒绝（不报错也不进页面），进这两页只能从界面点。
 - **`mipmap-anydpi-v26` 的 `-v26` 不能去掉**：想按 lint 的 `ObsoleteSdkInt` 建议把目录改名成 `mipmap-anydpi`（minSdk 已经是 26），实测**构建直接失败** —— `AAPT: error: resource mipmap/ic_launcher (aka com.quack.curriculumexporter:mipmap/ic_launcher) not found`，clean 后重试一样。留 `-v26`，这条警告当噪音。
-- **换启动图标后，机器上的图标缓存会骗人**：`install -r`、`am force-stop com.android.launcher` 都不刷新（`com.android.launcher` 是这台 ColorOS 的桌面包名）。**判据是桌面图标**，而「设置 → 应用详情」页的大图标有自己的缓存，重启设备后仍可能显示旧图标 —— 本批就因此误判过一轮"APK 没生效"，其实 `aapt2 dump xmltree --file res/drawable/ic_launcher_foreground.xml` 早就显示新 path 都在。重启设备后桌面才会显示新图标。
+- **换启动图标后，机器上的图标缓存会骗人**：`install -r`、`am force-stop com.android.launcher` 都不刷新（`com.android.launcher` 是这台 ColorOS 的桌面包名）。**判据同时看桌面图标和「应用信息」页的大图标**，别只看一个 —— 两者各有缓存，步调还不一致（本轮「应用信息」页在重装后先变了、桌面还是旧的）。只改图标**颜色**（path 不变）时缓存比换 path 更顽固：`install -r` + 重启设备后桌面仍可能是旧配色。**最彻底的办法是卸载重装**（`pm` 的图标缓存会重建）。任何时候怀疑"APK 没生效"，先用 `aapt2 dump xmltree --file res/drawable/ic_launcher_foreground.xml` 与 `aapt2 dump resources` 核对包内资源，再谈界面。
 - **ColorOS 桌面不按 night 配置取 App 图标**：`ui_night_mode=2` + 重启设备后，桌面图标仍是亮色版（黑底白图），没有走 `values-night` 的反色。资源表本身是对的（`aapt2 dump resources` 能看到 `color/icon_foreground` 有 `()` 与 `(night)` 两份），换成会重载图标的 launcher 才看得到反色。**别花时间在这上面排查**。
 
-## 7. 当前状态与验证结果（2026-09-30 真机通过）
+## 7. 当前状态与验证结果（2026-09-30 ~ 10-01 真机通过）
 
 两批修复，都在真机上验过。
 
@@ -412,21 +418,23 @@ powershell -ExecutionPolicy Bypass -File C:\Tools\CurriculumExporter\android\bui
 
 > 测试期间把「显示全部日历」开关来回拨过，收尾已恢复成默认关闭；设备已 `cmd uimode night no`、`svc power stayon false`，`/sdcard` 上的截图与 `ui*.xml`、本轮导出的 3 个 `.ics` 都已删除。
 
-**第六批（启动图标重做，设计见 5.10）**：`drawable/ic_launcher_foreground.xml` 换成用户手绘的几何图形、新增 `drawable/ic_launcher_monochrome.xml`、`mipmap-anydpi-v26/ic_launcher.xml` 补 `<monochrome>` 层；`values` / `values-night` 各加 `icon_background` / `icon_foreground` 两个语义色（日夜黑白对调）；源稿收进 `android/design/icon-source.svg`。
+**第六批（启动图标重做 + 亮色白顶栏 + 英文应用名，设计见 5.10）**：`drawable/ic_launcher_foreground.xml` 换成用户手绘的几何图形、新增 `drawable/ic_launcher_monochrome.xml`、`mipmap-anydpi-v26/ic_launcher.xml` 补 `<monochrome>` 层；`values` / `values-night` 各加 `icon_background` / `icon_foreground` 两个语义色；源稿收进 `android/design/icon-source.svg`。同批按用户看真机后的反馈又动了三处：**图标配色对调**（亮 = 白底黑图形 / 暗 = 黑底白图形）、**亮色顶栏改纯白**（`topbar` + `topbar_line`，顺带把 `TopBarTitle` 与 `ic_back.xml` 的静态前景色从 `on_accent` 换成 `text_primary`）、**应用名改 `GLTimetable`**（`app_name`）。
 
 构建：`BUILD SUCCESSFUL`、**20 个单测全过**（4 + 9 + 7）、lint **0 errors / 9 warnings**（`MonochromeLauncherIcon` 消失，其余 8 条同上）。
 
-真机验证（2026-10-01 00:05–00:12，OPPO PDRM00，亮色模式）：
+真机验证（2026-10-01 00:05–00:30，OPPO PDRM00）：
 
 | 验证项 | 结果 |
 | --- | --- |
-| APK 里的资源 | `aapt2 dump xmltree --file res/drawable/ic_launcher_foreground.xml`：三条新 path + `<group scale=0.42>` 都在；`dump resources` 里 `color/icon_foreground` 有 `()` `#ffffffff` 与 `(night)` `#ff111113` 两份 |
-| 桌面图标（判据） | 黑底 + 白色几何图形，缩在安全区内**没有被剪角**，图形约占可见区 63% |
+| APK 里的资源 | `aapt2 dump xmltree --file res/drawable/ic_launcher_foreground.xml`：三条新 path + `<group scale=0.42>` 都在；`dump resources`：`icon_background` `() #ffffffff` / `(night) #ff111113`、`icon_foreground` 恰好反过来；`topbar` `() #ffffffff` / `(night) #ff1a1a1d` |
+| 桌面图标（判据） | **白底 + 近黑几何图形**，缩在安全区内**没有被剪角**，图形约占可见区 63%（配色方向是用户看真机后定的） |
+| 应用名铺开 | 桌面标签、系统「应用信息」页、主界面顶栏标题**都变成 `GLTimetable`** |
 | 遮罩模拟 | 按真实映射（108 画布中心 72）离线渲染：圆形遮罩下四角也不越界；48px 下十字与斜带仍可辨 |
-| 夜间反色 | 资源层正确，但 ColorOS 桌面重启后仍显示亮色版（原因见 6.2，不是本批的 bug） |
-| 反面对照 | `install -r`、`am force-stop com.android.launcher`、甚至重启设备后，「设置 → 应用详情」页的大图标仍显示**旧的九宫格** —— 那是设置页自己的缓存，别拿它当判据 |
+| 亮色顶栏 | 纯白底 + 黑字（`GLTimetable` 加粗）+ 底下一条浅灰 1dp 细线，**状态栏图标自动变黑**（`UiTheme.apply()` 按底色现算出来的） |
+| 暗色顶栏 | 深灰底 + 白字，与前几批一致，没有出现"顶上一条白带" |
+| 夜间反色 | 资源层正确，但 ColorOS 桌面重启后仍显示亮色版图标（原因见 6.2，不是本批的 bug） |
 
-收尾：设备已 `cmd uimode night auto`、`svc power stayon false`、`am force-stop`；`/sdcard` 上本会话的截图全部删除（`Download/课表导出/` 里用户自己的 `.ics` 保留）。交付包 `curriculum-exporter-v1.0.0-android.apk` 已覆盖成新图标版（1003826 B，SHA256 `37C363B505C4C8B7D53FCCB0A00A3B99EC4AAC4C7AC26D68FF11C04E39840242`）。
+收尾：设备已 `cmd uimode night auto`、`svc power stayon false`、`am force-stop`；`/sdcard` 上本会话的截图全部删除（`Download/课表导出/` 里用户自己的 `.ics` 保留）。交付包 `curriculum-exporter-v1.0.0-android.apk` 已覆盖成这一版（1003818 B，SHA256 `1F033AC023BF6706155B357CA02E384942D49789D733C22C706444666001CFE9`）。
 
 维护须知：
 

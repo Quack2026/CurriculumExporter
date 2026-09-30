@@ -12,7 +12,7 @@
     <style name="TopBarTitle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textColor">@color/on_accent</item>
+        <item name="android:textColor">@color/text_primary</item>
         <item name="android:textSize">@dimen/text_headline</item>
         <item name="android:textStyle">bold</item>
     </style>
